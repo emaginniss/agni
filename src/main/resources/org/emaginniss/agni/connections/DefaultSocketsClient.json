@@ -1,0 +1,22 @@
+{
+  "host": {
+    "type": "string",
+    "required": false,
+    "defaukt": "127.0.0.1"
+  },
+  "port": {
+    "type": "int",
+    "required": false,
+    "default": 7350
+  },
+  "exitOnFailure": {
+    "type": "boolean",
+    "required": false,
+    "default": false
+  },
+  "envelopeFilter": {
+    "type": "factory",
+    "factoryType": "envelopeFilter",
+    "required": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "groupName": {
+    "type": "string",
+    "required": false,
+    "default": "225.7.193.61"
+  },
+  "multicastPort": {
+    "type": "int",
+    "required": false,
+    "default": 34001
+  },
+  "listenPort": {
+    "type": "int",
+    "required": false,
+    "defaukt": 35000
+  },
+  "server": {
+    "type": "factory",
+    "factoryType": "connection",
+    "required": false
+  },
+  "client": {
+    "type": "factory",
+    "factoryType": "connection",
+    "required": false
+  }
+}

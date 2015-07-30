@@ -1,0 +1,17 @@
+{
+  "port": {
+    "type": "int",
+    "required": false,
+    "default": 7350
+  },
+  "connectionFilter": {
+    "type": "factory",
+    "factoryType": "connectionFilter",
+    "required": false
+  },
+  "envelopeFilter": {
+    "type": "factory",
+    "factoryType": "envelopeFilter",
+    "required": false
+  }
+}

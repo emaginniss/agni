@@ -1,0 +1,11 @@
+{
+  "storageLocation": {
+    "type": "string",
+    "required": false
+  },
+  "maximumSize": {
+    "type": "int",
+    "required": false,
+    "default": 50000
+  }
+}

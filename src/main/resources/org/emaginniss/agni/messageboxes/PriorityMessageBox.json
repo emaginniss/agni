@@ -1,0 +1,11 @@
+{
+  "children": {
+    "type": "map",
+    "key": "priority",
+    "value": {
+      "type": "factory",
+      "factoryType": "messageBox",
+      "required": true
+    }
+  }
+}

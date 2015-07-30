@@ -1,0 +1,44 @@
+{
+  "uuid": {
+    "type": "string",
+    "required": false
+  },
+  "displayName": {
+    "type": "string",
+    "required": false
+  },
+  "threadCount": {
+    "type": "int",
+    "required": false,
+    "default": 10
+  },
+  "maxEnvelopePull": {
+    "type": "int",
+    "required": false,
+    "default": 10
+  },
+  "inbox": {
+    "type": "factory",
+    "factoryType": "messageBox",
+    "required": false
+  },
+  "serializer": {
+    "type": "factory",
+    "factoryType": "serializer",
+    "required": false
+  },
+  "pathFinder": {
+    "type": "factory",
+    "factoryType": "pathFinder",
+    "required": false
+  },
+  "connections": {
+    "type": "map",
+    "key": "name",
+    "value": {
+      "type": "factory",
+      "factoryType": "connection",
+      "required": true
+    }
+  }
+}
