@@ -56,11 +56,8 @@ public class ProcessorThread extends Thread {
         while (true) {
             try {
                 waiting = true;
-                envelopes = node.getInbox().dequeue(max, true);
+                envelopes = node.getInbox().dequeue(max, !shuttingDown);
             } catch (Throwable t) {
-                if (t instanceof InterruptedException && shuttingDown) {
-                    return;
-                }
                 log.error("Error while retrieving envelopes", t);
             } finally {
                 waiting = false;
@@ -71,9 +68,11 @@ public class ProcessorThread extends Thread {
                     try {
                         node.process(envelope);
                     } catch (Throwable t) {
-                        log.error("Error while retrieving envelope (" + envelope + ")", t);
+                        log.error("Error while processing envelope (" + envelope.getPayload() + " - " + envelope.getDestinationUuid() + ")", t);
                     }
                 }
+            } else if (shuttingDown) {
+                return;
             }
             envelopes = null;
         }
@@ -81,7 +80,6 @@ public class ProcessorThread extends Thread {
 
     public void shutdown() {
         shuttingDown = true;
-        this.interrupt();
     }
 
     public boolean isWaiting() {

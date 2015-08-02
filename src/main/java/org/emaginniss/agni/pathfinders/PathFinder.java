@@ -31,6 +31,7 @@ import org.emaginniss.agni.Destination;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.ComponentType;
 import org.emaginniss.agni.messages.RemoveLink;
+import org.emaginniss.agni.messages.StopRouting;
 import org.emaginniss.agni.messages.SubscriptionInfo;
 
 import java.util.Collection;
@@ -55,4 +56,6 @@ public interface PathFinder {
     void handle(SubscriptionInfo subscriptionInfo, String sourceUuid);
 
     void handle(RemoveLink removeLink);
+
+    Set<String> handle(StopRouting msg);
 }

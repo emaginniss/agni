@@ -31,10 +31,7 @@ import org.emaginniss.agni.AgniBuilder;
 import org.emaginniss.agni.Criteria;
 import org.emaginniss.agni.Destination;
 import org.emaginniss.agni.Node;
-import org.emaginniss.agni.messages.AddDestination;
-import org.emaginniss.agni.messages.RemoveDestination;
-import org.emaginniss.agni.messages.StatsResponse;
-import org.emaginniss.agni.messages.SubscriptionInfo;
+import org.emaginniss.agni.messages.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
@@ -46,8 +43,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class DestinationRegistration {
 
     private Node node;
-    private Map<String, Destination> destinationLookupByGuid = new TreeMap<>();
-    private Map<String, Set<Destination>> destinationLookupByType = new TreeMap<>();
+    private Map<String, Destination> destinationLookupByUuid = new TreeMap<>();
+    private Map<String, Set<String>> destinationLookupByType = new TreeMap<>();
+    private Map<String, Set<String>> destinationLookupByNodeUuid = new TreeMap<>();
     private ReadWriteLock destinationPathLookupLock = new ReentrantReadWriteLock(true);
     private Lock destinationPathLookupReadLock = destinationPathLookupLock.readLock();
     private Lock destinationPathLookupWriteLock = destinationPathLookupLock.writeLock();
@@ -60,49 +58,51 @@ public class DestinationRegistration {
         try {
             destinationPathLookupWriteLock.lock();
             addDestinationInternal(ld);
+            rebuildCaches();
             new AgniBuilder(new AddDestination(ld)).broadcast(node);
         } finally {
             destinationPathLookupWriteLock.unlock();
         }
     }
 
-    private void addDestinationInternal(Destination destination) {
-        if (!destinationLookupByGuid.containsKey(destination.getUuid())) {
-            if (!destinationLookupByType.containsKey(destination.getType())) {
-                destinationLookupByType.put(destination.getType(), new HashSet<Destination>());
+    private boolean addDestinationInternal(Destination destination) {
+        if (!destinationLookupByUuid.containsKey(destination.getUuid())) {
+            destinationLookupByUuid.put(destination.getUuid(), destination);
+            return true;
+        }
+        return false;
+    }
+
+    private void rebuildCaches() {
+        destinationLookupByType.clear();
+        destinationLookupByNodeUuid.clear();
+        for (Destination d : destinationLookupByUuid.values()) {
+            if (!destinationLookupByType.containsKey(d.getType())) {
+                destinationLookupByType.put(d.getType(), new HashSet<String>());
             }
-            destinationLookupByType.get(destination.getType()).add(destination);
-            destinationLookupByGuid.put(destination.getUuid(), destination);
+            destinationLookupByType.get(d.getType()).add(d.getUuid());
+
+            if (!destinationLookupByNodeUuid.containsKey(d.getNodeUuid())) {
+                destinationLookupByNodeUuid.put(d.getNodeUuid(), new HashSet<String>());
+            }
+            destinationLookupByNodeUuid.get(d.getNodeUuid()).add(d.getUuid());
         }
     }
 
     public void unsubscribe(Object object, Method method) {
         try {
             destinationPathLookupWriteLock.lock();
-            Set<String> affected = new HashSet<>();
-            for (String type : destinationLookupByType.keySet()) {
-                Set<Destination> remove = new HashSet<>();
-                for (Destination destination : destinationLookupByType.get(type)) {
-                    if (destination instanceof LocalDestination) {
-                        LocalDestination ld = (LocalDestination) destination;
-                        if (ld.is(object, method)) {
-                            remove.add(destination);
-                            destinationLookupByGuid.remove(ld.getUuid());
-                            new AgniBuilder(new RemoveDestination(ld.getUuid())).broadcast(node);
-                        }
+            for (Iterator<String> destIter = destinationLookupByUuid.keySet().iterator(); destIter.hasNext(); ) {
+                Destination destination = destinationLookupByUuid.get(destIter.next());
+                if (destination instanceof LocalDestination) {
+                    LocalDestination ld = (LocalDestination) destination;
+                    if (ld.is(object, method)) {
+                        destIter.remove();
+                        new AgniBuilder(new RemoveDestination(ld.getUuid())).broadcast(node);
                     }
                 }
-                if (remove.size() > 0) {
-                    destinationLookupByType.get(type).removeAll(remove);
-                    affected.add(type);
-                }
             }
-
-            for (String type : affected) {
-                if (destinationLookupByType.get(type).size() == 0) {
-                    destinationLookupByType.remove(type);
-                }
-            }
+            rebuildCaches();
         } finally {
             destinationPathLookupWriteLock.unlock();
         }
@@ -116,7 +116,8 @@ public class DestinationRegistration {
             try {
                 destinationPathLookupReadLock.lock();
                 if (destinationLookupByType.containsKey(type)) {
-                    for (Destination destination : destinationLookupByType.get(type)) {
+                    for (String destinationUuid : destinationLookupByType.get(type)) {
+                        Destination destination = destinationLookupByUuid.get(destinationUuid);
                         if (destination.matches(criteria)) {
                             out.add(destination);
                         }
@@ -140,7 +141,7 @@ public class DestinationRegistration {
     public Destination getDestination(String uuid) {
         try {
             destinationPathLookupReadLock.lock();
-            return destinationLookupByGuid.get(uuid);
+            return destinationLookupByUuid.get(uuid);
         } finally {
             destinationPathLookupReadLock.unlock();
         }
@@ -149,8 +150,12 @@ public class DestinationRegistration {
     public void handle(SubscriptionInfo subscriptionInfo) {
         try {
             destinationPathLookupWriteLock.lock();
+            boolean changed = false;
             for (Destination destination : subscriptionInfo.getDestinations()) {
-                addDestinationInternal(destination);
+                changed = addDestinationInternal(destination) || changed;
+            }
+            if (changed) {
+                rebuildCaches();
             }
         } finally {
             destinationPathLookupWriteLock.unlock();
@@ -160,7 +165,7 @@ public class DestinationRegistration {
     public Collection<Destination> getAll() {
         try {
             destinationPathLookupReadLock.lock();
-            return destinationLookupByGuid.values();
+            return destinationLookupByUuid.values();
         } finally {
             destinationPathLookupReadLock.unlock();
         }
@@ -170,7 +175,9 @@ public class DestinationRegistration {
         try {
             Destination destination = addDestination.getDestination();
             destinationPathLookupWriteLock.lock();
-            addDestinationInternal(destination);
+            if (addDestinationInternal(destination)) {
+                rebuildCaches();
+            }
         } finally {
             destinationPathLookupWriteLock.unlock();
         }
@@ -179,14 +186,8 @@ public class DestinationRegistration {
     public void handle(RemoveDestination removeDestination) {
         try {
             destinationPathLookupWriteLock.lock();
-            destinationLookupByGuid.remove(removeDestination.getDestinationUuid());
-            for (String type : destinationLookupByType.keySet()) {
-                for (Iterator<Destination> iter = destinationLookupByType.get(type).iterator(); iter.hasNext(); ) {
-                    if (iter.next().getUuid().equals(removeDestination.getDestinationUuid())) {
-                        iter.remove();
-                    }
-                }
-            }
+            destinationLookupByUuid.remove(removeDestination.getDestinationUuid());
+            rebuildCaches();
         } finally {
             destinationPathLookupWriteLock.unlock();
         }
@@ -195,7 +196,7 @@ public class DestinationRegistration {
     public void populate(StatsResponse resp) {
         try {
             destinationPathLookupReadLock.lock();
-            for (Destination d : destinationLookupByGuid.values()) {
+            for (Destination d : destinationLookupByUuid.values()) {
                 if (d instanceof LocalDestination) {
                     LocalDestination ld = (LocalDestination) d;
                     resp.getDestinationInfos().add(new StatsResponse.DestinationInfo(ld.getUuid(), ld.getDisplayName(), ld.getNodeUuid(), ld.getType(), ld.getCriteria(), true, ld.getTimesCalled(), ld.getTimesFailed(), ld.getTotalTimeSpent(), ld.getCurrent()));
@@ -205,6 +206,24 @@ public class DestinationRegistration {
             }
         } finally {
             destinationPathLookupReadLock.unlock();
+        }
+    }
+
+    public void handleLostNodes(Set<String> lostNodeUuids) {
+        try {
+            destinationPathLookupWriteLock.lock();
+            Set<String> destinationUuids = new HashSet<>();
+            for (String nodeUuid : lostNodeUuids) {
+                if (destinationLookupByNodeUuid.containsKey(nodeUuid)) {
+                    destinationUuids.addAll(destinationLookupByNodeUuid.get(nodeUuid));
+                }
+            }
+            for (String destinationUuid : destinationUuids) {
+                destinationLookupByUuid.remove(destinationUuid);
+            }
+            rebuildCaches();
+        } finally {
+            destinationPathLookupWriteLock.unlock();
         }
     }
 }

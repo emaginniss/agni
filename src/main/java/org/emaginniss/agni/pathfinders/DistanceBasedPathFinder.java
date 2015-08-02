@@ -31,6 +31,7 @@ import org.emaginniss.agni.Destination;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.Component;
 import org.emaginniss.agni.messages.RemoveLink;
+import org.emaginniss.agni.messages.StopRouting;
 import org.emaginniss.agni.messages.SubscriptionInfo;
 
 import java.util.*;
@@ -214,5 +215,40 @@ public class DistanceBasedPathFinder implements PathFinder {
             pathLookup.put(targetNodeUuid, paths);
         }
         paths.add(path);
+    }
+
+    @Override
+    public Set<String> handle(StopRouting msg) {
+        Set<String> lostNodeUuids = new HashSet<>();
+        try {
+            writeLock.lock();
+            for (String targetNodeUuid : pathLookup.keySet()) {
+                for (Iterator<String[]> iter = pathLookup.get(targetNodeUuid).iterator(); iter.hasNext(); ) {
+                    String []path = iter.next();
+                    boolean remove = false;
+                    for (String node : path) {
+                        if (node.equals(msg.getNodeUuid())) {
+                            remove = true;
+                        }
+                    }
+                    if (remove) {
+                        iter.remove();
+                    }
+                }
+            }
+
+            for (String node : pathLookup.keySet()) {
+                if (pathLookup.get(node).isEmpty()) {
+                    lostNodeUuids.add(node);
+                }
+            }
+            for (String node : lostNodeUuids) {
+                pathLookup.remove(node);
+            }
+            rebuildCache();
+        } finally {
+            writeLock.unlock();
+        }
+        return lostNodeUuids;
     }
 }

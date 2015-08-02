@@ -51,12 +51,35 @@ public class NodeHandler extends AbstractHandler {
 
     public NodeHandler(Configuration[] endpointConfigs) {
         for (Configuration endpointConfig : endpointConfigs) {
-            Endpoint endpoint = new Endpoint(endpointConfig);
-            if (!rootPathSegmentByMethod.containsKey(endpoint.getMethod().toLowerCase())) {
-                rootPathSegmentByMethod.put(endpoint.getMethod().toLowerCase(), new PathSegment());
+            Endpoint endpoint;
+            String path = endpointConfig.getString("path", null);
+            if (path == null || path.isEmpty()) {
+                throw new RuntimeException("Endpoint is missing path");
             }
-            PathSegment current = rootPathSegmentByMethod.get(endpoint.getMethod().toLowerCase());
-            for (String p : endpoint.getPathParts()) {
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            if (path.endsWith("/")) {
+                path = path.substring(0, path.length() - 1);
+            }
+
+            String []pathParts = path.split(Pattern.quote("/"));
+            String method = endpointConfig.getString("method", "GET");
+            String customClass = endpointConfig.getString("custom", null);
+            if (customClass == null) {
+                endpoint = new DefaultEndpoint(endpointConfig, path);
+            } else {
+                try {
+                    endpoint = (Endpoint) Class.forName(customClass).getConstructor(Configuration.class).newInstance(endpointConfig);
+                } catch (Exception e) {
+                    throw new RuntimeException("Unable to find or instantiate custom endpoint '" + customClass + "'", e);
+                }
+            }
+            if (!rootPathSegmentByMethod.containsKey(method.toLowerCase())) {
+                rootPathSegmentByMethod.put(method.toLowerCase(), new PathSegment());
+            }
+            PathSegment current = rootPathSegmentByMethod.get(method.toLowerCase());
+            for (String p : pathParts) {
                 if (p.startsWith("${")) {
                     if (current.getVariable() == null) {
                         current.setVariable(new PathSegment());
@@ -70,9 +93,10 @@ public class NodeHandler extends AbstractHandler {
                 }
             }
             if (current.getTerminal() != null) {
-                throw new RuntimeException("Multiple endpoints registered for same path " + endpoint.getPath());
+                throw new RuntimeException("Multiple endpoints registered for same path " + path);
             }
             current.setTerminal(endpoint);
+            current.setPathParts(pathParts);
         }
     }
 
@@ -109,7 +133,7 @@ public class NodeHandler extends AbstractHandler {
         }
         Endpoint ep = current.getTerminal();
         Map<String, String> variables = new HashMap<>();
-        for (String p : ep.getPathParts()) {
+        for (String p : current.getPathParts()) {
             if (p.startsWith("${")) {
                 variables.put(p, variableValues.remove(0));
             }

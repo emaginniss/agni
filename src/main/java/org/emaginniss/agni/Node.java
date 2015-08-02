@@ -35,6 +35,7 @@ import org.emaginniss.agni.connections.Connection;
 import org.emaginniss.agni.impl.*;
 import org.emaginniss.agni.messageboxes.MessageBox;
 import org.emaginniss.agni.messages.StatsResponse;
+import org.emaginniss.agni.messages.StopRouting;
 import org.emaginniss.agni.pathfinders.PathFinder;
 import org.emaginniss.agni.serializers.Serializer;
 import org.jetbrains.annotations.NotNull;
@@ -62,6 +63,7 @@ public class Node implements Closeable {
     private ThreadGroup threadGroup;
     private Set<ProcessorThread> processorThreads = new HashSet<>();
     private final Map<String, ResultContainer> waiting = new ConcurrentHashMap<>();
+    private boolean shuttingDown = false;
 
     public Node() {
         this(null);
@@ -188,6 +190,10 @@ public class Node implements Closeable {
     }
 
     public void send(@NotNull Object payload, String type, Criteria criteria, Attachments attachments, Priority priority) {
+        if (shuttingDown) {
+            throw new RuntimeException("Node is shutting down");
+        }
+
         String[] types = type == null ? getClassTypes(payload) : new String[]{type};
         priority = priority == null ? Priority.MEDIUM : priority;
         criteria = criteria == null ? new Criteria() : criteria;
@@ -213,6 +219,10 @@ public class Node implements Closeable {
     }
 
     public void broadcast(@NotNull Object payload, String type, Criteria criteria, Attachments attachments, Priority priority) {
+        if (shuttingDown) {
+            throw new RuntimeException("Node is shutting down");
+        }
+
         String[] types = type == null ? getClassTypes(payload) : new String[]{type};
         priority = priority == null ? Priority.MEDIUM : priority;
         criteria = criteria == null ? new Criteria() : criteria;
@@ -231,6 +241,10 @@ public class Node implements Closeable {
 
     @Nullable
     public PayloadAndAttachments request(@NotNull Object payload, String type, Criteria criteria, Attachments attachments, Priority priority, Long timeout) {
+        if (shuttingDown) {
+            throw new RuntimeException("Node is shutting down");
+        }
+
         String[] types = type == null ? getClassTypes(payload) : new String[]{type};
         priority = priority == null ? Priority.HIGH : priority;
         criteria = criteria == null ? new Criteria() : criteria;
@@ -273,6 +287,10 @@ public class Node implements Closeable {
 
     @NotNull
     public Map<Destination, PayloadAndAttachments> requestAll(@NotNull Object payload, String type, Criteria criteria, Attachments attachments, Priority priority, Long timeout) {
+        if (shuttingDown) {
+            throw new RuntimeException("Node is shutting down");
+        }
+
         String[] types = type == null ? getClassTypes(payload) : new String[]{type};
         priority = priority == null ? Priority.HIGH : priority;
         criteria = criteria == null ? new Criteria() : criteria;
@@ -402,10 +420,11 @@ public class Node implements Closeable {
 
         log.info("Shutting down node");
 
-        log.info("Stopping connection data");
-        connectionData.shutdown();
+        log.info("Broadcasting stop routing message");
+        new AgniBuilder(new StopRouting(uuid)).priority(Priority.HIGHEST).broadcast(this);
+        shuttingDown = true;
 
-        log.info("Stopping processor threads");
+        log.info("Waiting on processor threads");
         for (ProcessorThread pt : processorThreads) {
             pt.shutdown();
         }
@@ -416,6 +435,9 @@ public class Node implements Closeable {
                 //do nothing
             }
         }
+
+        log.info("Stopping connection data");
+        connectionData.shutdown();
 
         log.debug("Agni shutdown completed in " + (new Date().getTime() - start) + "ms");
         Thread.currentThread().setName(threadName);
@@ -473,5 +495,9 @@ public class Node implements Closeable {
             resp.getProcessorThreadInfos().add(pti);
         }
         return resp;
+    }
+
+    public boolean isShuttingDown() {
+        return shuttingDown;
     }
 }

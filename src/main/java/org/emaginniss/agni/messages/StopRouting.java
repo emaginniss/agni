@@ -25,46 +25,27 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.emaginniss.agni.rest;
-
-import java.util.HashMap;
-import java.util.Map;
+package org.emaginniss.agni.messages;
 
 /**
- * Created by Eric on 7/25/2015.
+ * Created by Eric on 8/2/2015.
  */
-public class PathSegment {
+public class StopRouting extends WhisperMessage {
 
-    private Map<String, PathSegment> children = new HashMap<>();
-    private PathSegment variable;
-    private Endpoint terminal;
-    private String []pathParts;
+    private String nodeUuid;
 
-    public Map<String, PathSegment> getChildren() {
-        return children;
+    public StopRouting() {
     }
 
-    public PathSegment getVariable() {
-        return variable;
+    public StopRouting(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
-    public void setVariable(PathSegment variable) {
-        this.variable = variable;
+    public String getNodeUuid() {
+        return nodeUuid;
     }
 
-    public Endpoint getTerminal() {
-        return terminal;
-    }
-
-    public void setTerminal(Endpoint terminal) {
-        this.terminal = terminal;
-    }
-
-    public String[] getPathParts() {
-        return pathParts;
-    }
-
-    public void setPathParts(String[] pathParts) {
-        this.pathParts = pathParts;
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 }

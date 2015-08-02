@@ -35,10 +35,7 @@ import org.emaginniss.agni.messages.RemoveLink;
 import org.emaginniss.agni.messages.StatsResponse;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ConnectionData implements ConnectionParent {
 
@@ -85,7 +82,7 @@ public class ConnectionData implements ConnectionParent {
         if (newConnection) {
             node.getPathFinder().addNodePath(new String[]{uuid});
 
-            node.getInbox().enqueue(node.getWhisperHandler().buildSubscriptionInfoEnvelope(new String[0], uuid));
+            node.getInbox().enqueue(node.getWhisperHandler().buildSubscriptionInfoEnvelope(null, new String[0], uuid));
         }
     }
 
@@ -97,7 +94,10 @@ public class ConnectionData implements ConnectionParent {
                 if (connectedNodes.get(uuid).size() == 0) {
                     connectedNodes.remove(uuid);
                     node.getPathFinder().removeNodeConnection(null, uuid);
-                    new AgniBuilder(new RemoveLink(node.getUuid(), uuid)).broadcast(node);
+                    node.getDestinationRegistration().handleLostNodes(Collections.singleton(uuid));
+                    if (!node.isShuttingDown()) {
+                        new AgniBuilder(new RemoveLink(node.getUuid(), uuid)).broadcast(node);
+                    }
                 }
             }
         }

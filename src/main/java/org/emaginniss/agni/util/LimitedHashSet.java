@@ -25,46 +25,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.emaginniss.agni.rest;
+package org.emaginniss.agni.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 
 /**
- * Created by Eric on 7/25/2015.
+ * Created by Eric on 8/2/2015.
  */
-public class PathSegment {
+public class LimitedHashSet<T> extends LinkedHashSet<T> {
 
-    private Map<String, PathSegment> children = new HashMap<>();
-    private PathSegment variable;
-    private Endpoint terminal;
-    private String []pathParts;
+    private int maxSize;
 
-    public Map<String, PathSegment> getChildren() {
-        return children;
+    public LimitedHashSet(int maxSize) {
+        this.maxSize = maxSize;
     }
 
-    public PathSegment getVariable() {
-        return variable;
+    @Override
+    public boolean add(T t) {
+        return super.add(t);
     }
 
-    public void setVariable(PathSegment variable) {
-        this.variable = variable;
-    }
-
-    public Endpoint getTerminal() {
-        return terminal;
-    }
-
-    public void setTerminal(Endpoint terminal) {
-        this.terminal = terminal;
-    }
-
-    public String[] getPathParts() {
-        return pathParts;
-    }
-
-    public void setPathParts(String[] pathParts) {
-        this.pathParts = pathParts;
+    @Override
+    public synchronized boolean addAll(Collection<? extends T> c) {
+        while (size() >=  maxSize) {
+            iterator().remove();
+        }
+        return super.addAll(c);
     }
 }

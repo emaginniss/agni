@@ -98,7 +98,7 @@ public class DefaultSocketsClient implements Connection, Runnable {
             envelope.write(out);
             return true;
         } catch (IOException e) {
-            log.error("Error forwarding message", e);
+            log.error("Error forwarding message - " + envelope.getType() + " - " + envelope.getNodeUuid(), e);
             return false;
         }
     }

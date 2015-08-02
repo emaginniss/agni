@@ -27,5 +27,17 @@
 
 package org.emaginniss.agni.messages;
 
+import java.util.UUID;
+
 public class WhisperMessage {
+
+    private String messageUuid = UUID.randomUUID().toString();
+
+    public String getMessageUuid() {
+        return messageUuid;
+    }
+
+    public void setMessageUuid(String messageUuid) {
+        this.messageUuid = messageUuid;
+    }
 }
