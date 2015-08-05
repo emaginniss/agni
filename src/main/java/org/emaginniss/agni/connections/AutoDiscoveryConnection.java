@@ -36,6 +36,7 @@ import org.emaginniss.agni.annotations.Component;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -92,11 +93,31 @@ public class AutoDiscoveryConnection implements Connection, ConnectionParent {
         socketsServer = Factory.instantiate(Connection.class, serverConfig, this);
 
         try {
-            multicastSocket = new MulticastSocket(multicastPort);
-            multicastSocket.joinGroup(groupName);
+            boolean complete = false;
+
+            for (Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces(); niEnum.hasMoreElements() && !complete; ) {
+                NetworkInterface ni = niEnum.nextElement();
+                if (!ni.isLoopback()) {
+                    for (Enumeration<InetAddress> ia = ni.getInetAddresses(); ia.hasMoreElements() && !complete; ) {
+                        try {
+                            multicastSocket = new MulticastSocket(multicastPort);
+                            multicastSocket.setInterface(ia.nextElement());
+                            multicastSocket.joinGroup(groupName);
+                            complete = true;
+                        } catch (Exception e) {
+                            //Do nothing
+                        }
+                    }
+                }
+            }
+
+            if (!complete) {
+                throw new RuntimeException("Unable to bind to multicast socket on any network interface");
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
 
         multicastServerThead = new MulticastServerThead();
         multicastServerThead.start();

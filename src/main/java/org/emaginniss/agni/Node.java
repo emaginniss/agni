@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.emaginniss.agni.annotations.Criterion;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.attachments.Attachments;
-import org.emaginniss.agni.connections.Connection;
 import org.emaginniss.agni.impl.*;
 import org.emaginniss.agni.messageboxes.MessageBox;
 import org.emaginniss.agni.messages.StatsResponse;
@@ -448,14 +447,6 @@ public class Node implements Closeable {
         shutdown();
     }
 
-    public void enableConnection(Connection connection, String uuid, String displayName) {
-        connectionData.enableConnection(connection, uuid, displayName);
-    }
-
-    public void disableConnection(Connection connection, String uuid, String displayName) {
-        connectionData.disableConnection(connection, uuid, displayName);
-    }
-
     public void handleIncomingEnvelope(Envelope e) {
         enqueue(e);
     }
@@ -470,10 +461,6 @@ public class Node implements Closeable {
 
     public WhisperHandler getWhisperHandler() {
         return whisperHandler;
-    }
-
-    public ConnectionData getConnectionData() {
-        return connectionData;
     }
 
     public StatsResponse buildStatsResponse() {
