@@ -1,0 +1,18 @@
+{
+  "rest": {
+    "connectors": {
+      "http": {
+        "port": 8080
+      }
+    },
+    "endpoints": [
+      {
+        "path": "/stats",
+        "method": "GET",
+        "execute": "request",
+        "payloadType": "org.emaginniss.agni.messages.StatsRequest",
+        "response": "payload"
+      }
+    ]
+  }
+}

@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.emaginniss</groupId>
-    <artifactId>agni</artifactId>
+    <artifactId>agni-examples</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
-    <name>agni</name>
+    <name>agni-examples</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -16,10 +16,18 @@
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 
-    <modules>
-        <module>core</module>
-        <module>rest</module>
-        <module>bootstrap</module>
-        <module>examples</module>
-    </modules>	
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.emaginniss</groupId>
+            <artifactId>agni-bootstrap</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

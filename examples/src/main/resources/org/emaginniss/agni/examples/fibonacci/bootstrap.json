@@ -1,0 +1,24 @@
+{
+  "subscribers": [
+    "org.emaginniss.agni.examples.fibonacci.FibonacciHandler"
+  ],
+  "rest": {
+    "connectors": {
+      "http": {
+        "port": 8080
+      }
+    },
+    "endpoints": [
+      {
+        "path": "fib/${index}",
+        "method": "GET",
+        "payload": "new",
+        "payloadType": "org.emaginniss.agni.examples.fibonacci.FibonacciRequest",
+        "inject": {
+          "index": "${index}"
+        },
+        "response": "payload"
+      }
+    ]
+  }
+}
