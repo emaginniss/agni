@@ -50,11 +50,11 @@ import java.util.Map;
  */
 public class DefaultEndpoint implements Endpoint{
 
-    private String execute;
-    private String payload;
+    private String execute = "request";
+    private String payload = "null";
     private String payloadType;
     private String payloadAttachment;
-    private String response;
+    private String response = "payload";
     private String responseAttachmentName;
     private String responseAttachmentFilename;
     private String responseAttachmentContentType;
@@ -79,6 +79,9 @@ public class DefaultEndpoint implements Endpoint{
         criteria.putAll(config.getStringMap("criteria"));
         inject.putAll(config.getStringMap("inject"));
         attachments.putAll(config.getStringMap("attachment"));
+    }
+
+    public DefaultEndpoint() {
     }
 
     public void handle(Map<String, String> pathVariables, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -204,5 +207,81 @@ public class DefaultEndpoint implements Endpoint{
             p = Agni.getNode().getSerializer().deserialize(payload, payloadType);
         }
         return p;
+    }
+
+    public String getExecute() {
+        return execute;
+    }
+
+    public void setExecute(String execute) {
+        this.execute = execute;
+    }
+
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
+
+    public String getPayloadType() {
+        return payloadType;
+    }
+
+    public void setPayloadType(String payloadType) {
+        this.payloadType = payloadType;
+    }
+
+    public String getPayloadAttachment() {
+        return payloadAttachment;
+    }
+
+    public void setPayloadAttachment(String payloadAttachment) {
+        this.payloadAttachment = payloadAttachment;
+    }
+
+    public String getResponse() {
+        return response;
+    }
+
+    public void setResponse(String response) {
+        this.response = response;
+    }
+
+    public String getResponseAttachmentName() {
+        return responseAttachmentName;
+    }
+
+    public void setResponseAttachmentName(String responseAttachmentName) {
+        this.responseAttachmentName = responseAttachmentName;
+    }
+
+    public String getResponseAttachmentFilename() {
+        return responseAttachmentFilename;
+    }
+
+    public void setResponseAttachmentFilename(String responseAttachmentFilename) {
+        this.responseAttachmentFilename = responseAttachmentFilename;
+    }
+
+    public String getResponseAttachmentContentType() {
+        return responseAttachmentContentType;
+    }
+
+    public void setResponseAttachmentContentType(String responseAttachmentContentType) {
+        this.responseAttachmentContentType = responseAttachmentContentType;
+    }
+
+    public Map<String, String> getCriteria() {
+        return criteria;
+    }
+
+    public Map<String, String> getInject() {
+        return inject;
+    }
+
+    public Map<String, String> getAttachments() {
+        return attachments;
     }
 }

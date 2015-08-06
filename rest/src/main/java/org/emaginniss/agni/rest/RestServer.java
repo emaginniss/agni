@@ -39,9 +39,14 @@ import java.util.Map;
  */
 public class RestServer {
 
+    private static RestServer instance;
+
     private Server server;
+    private NodeHandler nodeHandler;
 
     public RestServer(Configuration config) throws Exception {
+        instance = this;
+
         server = new Server();
 
         Map<String, Configuration> connectorConfigs = config.getMap("connectors");
@@ -78,7 +83,8 @@ public class RestServer {
             server.addConnector(connector);
         }
 
-        server.setHandler(new NodeHandler(config.getArray("endpoints")));
+        nodeHandler = new NodeHandler(config.getArray("endpoints"));
+        server.setHandler(nodeHandler);
 
         server.start();
     }
@@ -94,5 +100,13 @@ public class RestServer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    protected NodeHandler getNodeHandler() {
+        return nodeHandler;
+    }
+
+    public EndpointBuilder buildEndpoint(String path) {
+        return new EndpointBuilder(instance, path);
     }
 }

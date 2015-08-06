@@ -75,28 +75,8 @@ public class NodeHandler extends AbstractHandler {
                     throw new RuntimeException("Unable to find or instantiate custom endpoint '" + customClass + "'", e);
                 }
             }
-            if (!rootPathSegmentByMethod.containsKey(method.toLowerCase())) {
-                rootPathSegmentByMethod.put(method.toLowerCase(), new PathSegment());
-            }
-            PathSegment current = rootPathSegmentByMethod.get(method.toLowerCase());
-            for (String p : pathParts) {
-                if (p.startsWith("${")) {
-                    if (current.getVariable() == null) {
-                        current.setVariable(new PathSegment());
-                    }
-                    current = current.getVariable();
-                } else {
-                    if (!current.getChildren().containsKey(p)) {
-                        current.getChildren().put(p, new PathSegment());
-                    }
-                    current = current.getChildren().get(p);
-                }
-            }
-            if (current.getTerminal() != null) {
-                throw new RuntimeException("Multiple endpoints registered for same path " + path);
-            }
-            current.setTerminal(endpoint);
-            current.setPathParts(pathParts);
+
+            addEndpoint(path, pathParts, method, endpoint);
         }
     }
 
@@ -143,5 +123,30 @@ public class NodeHandler extends AbstractHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void addEndpoint(String path, String []pathParts, String method, Endpoint endpoint) {
+        if (!rootPathSegmentByMethod.containsKey(method.toLowerCase())) {
+            rootPathSegmentByMethod.put(method.toLowerCase(), new PathSegment());
+        }
+        PathSegment current = rootPathSegmentByMethod.get(method.toLowerCase());
+        for (String p : pathParts) {
+            if (p.startsWith("${")) {
+                if (current.getVariable() == null) {
+                    current.setVariable(new PathSegment());
+                }
+                current = current.getVariable();
+            } else {
+                if (!current.getChildren().containsKey(p)) {
+                    current.getChildren().put(p, new PathSegment());
+                }
+                current = current.getChildren().get(p);
+            }
+        }
+        if (current.getTerminal() != null) {
+            throw new RuntimeException("Multiple endpoints registered for same path " + path);
+        }
+        current.setTerminal(endpoint);
+        current.setPathParts(pathParts);
     }
 }
