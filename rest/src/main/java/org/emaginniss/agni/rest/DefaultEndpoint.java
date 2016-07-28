@@ -29,10 +29,7 @@ package org.emaginniss.agni.rest;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.io.IOUtils;
-import org.emaginniss.agni.Agni;
-import org.emaginniss.agni.AgniBuilder;
-import org.emaginniss.agni.Configuration;
-import org.emaginniss.agni.PayloadAndAttachments;
+import org.emaginniss.agni.*;
 import org.emaginniss.agni.attachments.Attachment;
 import org.emaginniss.agni.attachments.InputStreamAttachment;
 
@@ -50,7 +47,7 @@ import java.util.Map;
  */
 public class DefaultEndpoint implements Endpoint{
 
-    private String execute = "request";
+    private Execute execute = Execute.request;
     private String payload = "null";
     private String payloadType;
     private String payloadAttachment;
@@ -69,7 +66,7 @@ public class DefaultEndpoint implements Endpoint{
             throw new RuntimeException("Payload Type for endpoint " + path + " is missing");
         }
 
-        execute = config.getString("execute", "request");
+        execute = Execute.valueOf(config.getString("execute", "request"));
         payload = config.getString("payload", "null");
         payloadAttachment = config.getString("payloadAttachment", null);
         response = config.getString("response", "payload");
@@ -87,50 +84,59 @@ public class DefaultEndpoint implements Endpoint{
     public void handle(Map<String, String> pathVariables, HttpServletRequest request, HttpServletResponse response) throws Exception {
         Object payload = buildPayload(request);
 
-        injectPayload(payload, pathVariables);
+        injectPayload(payload, pathVariables, request);
 
         AgniBuilder builder = Agni.build(payload).type(payloadType);
 
-        setCriteria(builder, pathVariables);
+        setCriteria(builder, pathVariables, request);
 
         loadAttachments(builder, request);
 
-        if ("send".equals(execute)) {
+        if (execute == Execute.send) {
             builder.send();
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().flush();
-        } else if ("request".equals(execute)) {
-            PayloadAndAttachments payloadAndAttachments = builder.request();
-            if (payloadAndAttachments == null) {
-                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                response.getWriter().flush();
-            } else {
-                if ("payload".equals(this.response)) {
-                    sendPayload(response, payloadAndAttachments);
-                } else if ("attachment".equals(this.response)) {
-                    sendAttachment(response, payloadAndAttachments, pathVariables);
+        } else if (execute == Execute.broadcast) {
+            builder.broadcast();
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().flush();
+        } else if (execute == Execute.request) {
+            try {
+                PayloadAndAttachments payloadAndAttachments = builder.request();
+                if (payloadAndAttachments == null) {
+                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    response.getWriter().flush();
+                } else {
+                    if ("payload".equals(this.response)) {
+                        sendPayload(response, payloadAndAttachments);
+                    } else if ("attachment".equals(this.response)) {
+                        sendAttachment(response, payloadAndAttachments, pathVariables, request);
+                    }
                 }
+            } catch (Throwable e) {
+                while (e.getCause() != null && !e.getCause().equals(e)) {
+                    e = e.getCause();
+                }
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                Writer writer = response.getWriter();
+                writer.write(Agni.getNode().getSerializer().serialize(e));
+                writer.flush();
             }
         }
-
     }
 
-    private void sendAttachment(HttpServletResponse response, PayloadAndAttachments resp, Map<String, String> variables) throws IOException {
+    private void sendAttachment(HttpServletResponse response, PayloadAndAttachments resp, Map<String, String> variables, HttpServletRequest request) throws IOException {
         Attachment att = resp.getAttachments().get(responseAttachmentName);
         if (att == null) {
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
-            if (responseAttachmentContentType != null && responseAttachmentContentType.startsWith("${")) {
-                responseAttachmentContentType = variables.get(responseAttachmentContentType);
-            }
+            String responseAttachmentContentType = (String) resolveVariable(this.responseAttachmentContentType, variables, request);
             if (responseAttachmentContentType != null) {
                 response.setContentType(responseAttachmentContentType);
             }
             response.setContentLength(att.size());
-            if (responseAttachmentFilename != null && responseAttachmentFilename.startsWith("${")) {
-                responseAttachmentFilename = variables.get(responseAttachmentFilename);
-            }
+            String responseAttachmentFilename = (String) resolveVariable(this.responseAttachmentFilename, variables, request);
             if (responseAttachmentFilename != null) {
                 response.setHeader("Content-Disposition", "attachment; filename=\"" + responseAttachmentFilename + "\";");
             } else {
@@ -160,22 +166,16 @@ public class DefaultEndpoint implements Endpoint{
         }
     }
 
-    private void setCriteria(AgniBuilder builder, Map<String, String> variables) {
+    private void setCriteria(AgniBuilder builder, Map<String, String> variables, HttpServletRequest request) {
         for (String criteriaName : criteria.keySet()) {
-            String value = criteria.get(criteriaName);
-            if (value.startsWith("${")) {
-                value = variables.get(value);
-            }
+            String value = (String) resolveVariable(criteria.get(criteriaName), variables, request);
             builder.criteria(criteriaName, value);
         }
     }
 
-    private void injectPayload(Object p, Map<String, String> variables) throws IllegalAccessException, InvocationTargetException {
+    private void injectPayload(Object p, Map<String, String> variables, HttpServletRequest request) throws IllegalAccessException, InvocationTargetException {
         for (String beanName : inject.keySet()) {
-            String value = inject.get(beanName);
-            if (value.startsWith("${")) {
-                value = variables.get(value);
-            }
+            String value = (String) resolveVariable(inject.get(beanName), variables, request);
             BeanUtils.setProperty(p, beanName, value);
         }
     }
@@ -187,13 +187,7 @@ public class DefaultEndpoint implements Endpoint{
         } else if ("new".equals(payload)) {
             p = Class.forName(payloadType).newInstance();
         } else if ("body".equals(payload)) {
-            StringBuilder body = new StringBuilder();
-            String line;
-            BufferedReader reader = request.getReader();
-            while ((line = reader.readLine()) != null) {
-                body.append(line);
-            }
-            p = Agni.getNode().getSerializer().deserialize(body.toString(), payloadType);
+            p = getRequestBody(request, payloadType);
         } else if ("attachment".equals(payload)) {
             Part part = request.getPart(payloadAttachment);
             StringBuilder body = new StringBuilder();
@@ -209,11 +203,21 @@ public class DefaultEndpoint implements Endpoint{
         return p;
     }
 
-    public String getExecute() {
+    public static Object getRequestBody(HttpServletRequest request, String payloadType) throws IOException {
+        StringBuilder body = new StringBuilder();
+        String line;
+        BufferedReader reader = request.getReader();
+        while ((line = reader.readLine()) != null) {
+            body.append(line);
+        }
+        return Agni.getNode().getSerializer().deserialize(body.toString(), payloadType);
+    }
+
+    public Execute getExecute() {
         return execute;
     }
 
-    public void setExecute(String execute) {
+    public void setExecute(Execute execute) {
         this.execute = execute;
     }
 
@@ -283,5 +287,12 @@ public class DefaultEndpoint implements Endpoint{
 
     public Map<String, String> getAttachments() {
         return attachments;
+    }
+
+    public Object resolveVariable(String text, Map<String, String> variables, HttpServletRequest request) {
+        if (text != null && text.startsWith("${") && text.endsWith("}")) {
+            return variables.get(text.substring(2, text.length() - 1));
+        }
+        return text;
     }
 }

@@ -32,13 +32,12 @@ import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.Component;
 import org.emaginniss.agni.util.ExtendedDataInputStream;
 import org.emaginniss.agni.util.ExtendedDataOutputStream;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -61,7 +60,7 @@ public class FileBackedMessageBox implements MessageBox {
     }
 
     @Override
-    public void enqueue(Envelope envelope) {
+    public void enqueue(@NotNull Envelope envelope) {
         synchronized (this) {
             writeQueue.addLast(envelope);
             currentSize.incrementAndGet();
@@ -76,10 +75,8 @@ public class FileBackedMessageBox implements MessageBox {
     }
 
     @Override
-    public List<Envelope> dequeue(int max, boolean wait) throws InterruptedException {
-        List<Envelope> out = new ArrayList<>();
-
-        while (out.size() == 0) {
+    public Envelope dequeue(boolean wait) throws InterruptedException {
+        while (true) {
             synchronized (this) {
                 if (readQueue.size() == 0 && storage.size() == 0 && writeQueue.size() == 0) {
                     if (wait) {
@@ -98,16 +95,13 @@ public class FileBackedMessageBox implements MessageBox {
                     }
                 }
 
-                while (readQueue.size() > 0 && out.size() < max) {
-                    out.add(readQueue.removeFirst());
+                if (readQueue.size() > 0) {
+                    currentMemorySize.decrementAndGet();
+                    currentSize.decrementAndGet();
+                    return readQueue.removeFirst();
                 }
-
-                currentMemorySize.addAndGet(0 - out.size());
-                currentSize.addAndGet(0 - out.size());
             }
         }
-
-        return out;
     }
 
     private void storeWriteQueue() {

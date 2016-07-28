@@ -32,9 +32,6 @@ import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Node;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ProcessorThread extends Thread {
 
     private static final Logger log = Logger.getLogger(ProcessorThread.class);
@@ -42,13 +39,11 @@ public class ProcessorThread extends Thread {
     private Node node;
     private boolean shuttingDown = false;
     private boolean waiting = false;
-    private final int max;
-    private List<Envelope> envelopes = new ArrayList<>();
+    private Envelope envelope = null;
 
-    public ProcessorThread(ThreadGroup group, String name, Node node, int max) {
+    public ProcessorThread(ThreadGroup group, String name, Node node) {
         super(group, name);
         this.node = node;
-        this.max = max;
     }
 
     @Override
@@ -56,25 +51,23 @@ public class ProcessorThread extends Thread {
         while (true) {
             try {
                 waiting = true;
-                envelopes = node.getInbox().dequeue(max, !shuttingDown);
+                envelope = node.getInbox().dequeue(!shuttingDown);
             } catch (Throwable t) {
-                log.error("Error while retrieving envelopes", t);
+                log.error("Error while retrieving envelope", t);
             } finally {
                 waiting = false;
             }
 
-            if (envelopes != null && envelopes.size() > 0) {
-                for (Envelope envelope : envelopes) {
-                    try {
-                        node.process(envelope);
-                    } catch (Throwable t) {
-                        log.error("Error while processing envelope (" + envelope.getPayload() + " - " + envelope.getDestinationUuid() + ")", t);
-                    }
+            if (envelope != null) {
+                try {
+                    node.process(envelope);
+                } catch (Throwable t) {
+                    log.error("Error while processing envelope (" + envelope.getPayload() + " - " + envelope.getDestinationUuid() + ")", t);
                 }
             } else if (shuttingDown) {
                 return;
             }
-            envelopes = null;
+            envelope = null;
         }
     }
 
@@ -87,17 +80,11 @@ public class ProcessorThread extends Thread {
     }
 
     /**
-     * Return a list of the envelopes that this processor thread is currently handling
-     * This method is slightly complex because we want to ensure that we don't send back the list of envelopes and have
-     * the receiver modify it while the processor thread is in flight.
-     * @return A list of envelopes or null if there aren't any
+     * Return the envelope that this processor thread is currently handling
+     * @return An envelope or null
      */
     @Nullable
-    public List<Envelope> getEnvelopes() {
-        List<Envelope> hold = envelopes;
-        if (hold != null) {
-            return new ArrayList<>(hold);
-        }
-        return null;
+    public Envelope getEnvelope() {
+        return envelope;
     }
 }

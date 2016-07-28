@@ -2,19 +2,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.emaginniss</groupId>
     <artifactId>agni-bootstrap</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${project.parent.version}</version>
     <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.emaginniss</groupId>
+        <artifactId>agni</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
     <name>agni-bootstrap</name>
     <url>http://maven.apache.org</url>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -33,6 +32,12 @@
         <dependency>
             <groupId>org.emaginniss</groupId>
             <artifactId>agni-rest</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.emaginniss</groupId>
+            <artifactId>agni-scheduler</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

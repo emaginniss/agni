@@ -93,4 +93,8 @@ public abstract class Agni {
     public static Node getNode() {
         return node;
     }
+
+    public static <T> T createManager(Class T) {
+        return node.createManager(T);
+    }
 }

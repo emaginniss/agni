@@ -175,7 +175,7 @@ public class StatsResponse {
     public static class ProcessorThreadInfo {
         private String name;
         private boolean waiting;
-        private List<String> envelopeTypes = new ArrayList<>();
+        private String envelopeType;
         private List<StackTraceElement> stackTrace = new ArrayList<>();
 
         public ProcessorThreadInfo() {
@@ -194,8 +194,12 @@ public class StatsResponse {
             return waiting;
         }
 
-        public List<String> getEnvelopeTypes() {
-            return envelopeTypes;
+        public String getEnvelopeType() {
+            return envelopeType;
+        }
+
+        public void setEnvelopeType(String envelopeType) {
+            this.envelopeType = envelopeType;
         }
 
         public List<StackTraceElement> getStackTrace() {

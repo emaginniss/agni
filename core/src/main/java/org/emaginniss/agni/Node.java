@@ -32,6 +32,7 @@ import org.emaginniss.agni.annotations.Criterion;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.attachments.Attachments;
 import org.emaginniss.agni.impl.*;
+import org.emaginniss.agni.managers.ManagerFactory;
 import org.emaginniss.agni.messageboxes.MessageBox;
 import org.emaginniss.agni.messages.StatsResponse;
 import org.emaginniss.agni.messages.StopRouting;
@@ -59,6 +60,7 @@ public class Node implements Closeable {
     private PathFinder pathFinder;
     private Serializer serializer;
     private MessageBox inbox;
+    private ManagerFactory managerFactory;
     private ThreadGroup threadGroup;
     private Set<ProcessorThread> processorThreads = new HashSet<>();
     private final Map<String, ResultContainer> waiting = new ConcurrentHashMap<>();
@@ -90,11 +92,13 @@ public class Node implements Closeable {
         log.debug("Creating serializer");
         serializer = Factory.instantiate(Serializer.class, configuration.getChild("serializer"), this);
 
+        log.debug("Creating manager factory");
+        managerFactory = Factory.instantiate(ManagerFactory.class, configuration.getChild("managerFactory"), this);
+
         int threadCount = configuration.getInt("threadCount", 10);
-        int maxEnvelopePull = configuration.getInt("maxEnvelopePull", 1);
         log.debug("Starting " + threadCount + " processor threads");
         for (int i = 0; i < threadCount; i++) {
-            ProcessorThread pt = new ProcessorThread(threadGroup, displayName + " - ProcessorThread[" + i + "]", this, maxEnvelopePull);
+            ProcessorThread pt = new ProcessorThread(threadGroup, displayName + " - ProcessorThread[" + i + "]", this);
             pt.start();
             processorThreads.add(pt);
         }
@@ -117,20 +121,16 @@ public class Node implements Closeable {
             Subscribe subscribe = method.getAnnotation(Subscribe.class);
             if (subscribe != null) {
                 String type = subscribe.typeName();
-                if (type == null || "".equals(type)) {
+                if ("".equals(type)) {
                     type = null;
                 }
-                if (type == null && subscribe.typeClass() != null && !subscribe.typeClass().equals(void.class)) {
+                if (type == null && !subscribe.typeClass().equals(void.class)) {
                     type = subscribe.typeClass().getName();
                 }
                 Criteria criteria = new Criteria();
-                if (subscribe.criteria() != null) {
-                    for (Criterion c : subscribe.criteria()) {
-                        criteria.put(c.key(), c.value());
-                    }
-                }
+                Arrays.stream(subscribe.criteria()).forEach(c -> criteria.put(c.key(), c.value()));
                 String displayName = subscribe.displayName();
-                if (displayName == null || "".equals(displayName)) {
+                if ("".equals(displayName)) {
                     displayName = null;
                 }
 
@@ -278,7 +278,15 @@ public class Node implements Closeable {
         }
 
         if (result.getResult().size() > 0) {
-            return result.getResult().values().iterator().next();
+            PayloadAndAttachments resp = result.getResult().values().iterator().next();
+            if (resp.getPayload() instanceof Throwable) {
+                if (resp.getPayload() instanceof RuntimeException) {
+                    throw (RuntimeException) resp.getPayload();
+                } else {
+                    throw new RuntimeException((Throwable) resp.getPayload());
+                }
+            }
+            return resp;
         }
 
         return null;
@@ -356,7 +364,7 @@ public class Node implements Closeable {
         envelope.setPath(path.toArray(new String[path.size()]));
 
         if (envelope.getNodeUuid().equals(uuid)) {
-            Object payload = serializer.deserialize(envelope.getPayload(), envelope.getClassName());
+            Object payload = envelope.getPayload() == null ? null : serializer.deserialize(envelope.getPayload(), envelope.getClassName());
 
             //This node is the final destination
             if (envelope.getResponseToUuid() == null) {
@@ -366,12 +374,14 @@ public class Node implements Closeable {
                 }
                 PayloadAndAttachments response = ld.invoke(envelope, payload);
 
-                if (envelope.isResponseExpected() && response != null) {
-                    Envelope out = new Envelope(response.getPayload().getClass().getName(), response.getPayload().getClass().getName(), serializer.serialize(response.getPayload()), envelope.getPriority(), response.getAttachments(), new Criteria(), false);
+                if (envelope.isResponseExpected()) {
+                    Envelope out = new Envelope(response == null ? null : response.getPayload().getClass().getName(), response == null ? null : response.getPayload().getClass().getName(), response == null ? null : serializer.serialize(response.getPayload()), envelope.getPriority(), response == null ? null : response.getAttachments(), new Criteria(), false);
                     out.setNodeUuid(envelope.getPath()[0]);
                     out.setResponseToUuid(envelope.getUuid());
                     out.setDestinationUuid(ld.getUuid());
                     enqueue(out);
+                } else if (response != null && response.getPayload() instanceof Throwable) {
+                    throw new RuntimeException((Throwable) response.getPayload());
                 }
             } else {
                 ResultContainer resultContainer = waiting.get(envelope.getResponseToUuid());
@@ -471,11 +481,9 @@ public class Node implements Closeable {
         for (ProcessorThread pt : processorThreads) {
             StatsResponse.ProcessorThreadInfo pti = new StatsResponse.ProcessorThreadInfo(pt.getName(), pt.isWaiting());
             if (!pt.isWaiting()) {
-                List<Envelope> envelopes = pt.getEnvelopes();
-                if (envelopes != null) {
-                    for (Envelope e : envelopes) {
-                        pti.getEnvelopeTypes().add(e.getType());
-                    }
+                Envelope envelope = pt.getEnvelope();
+                if (envelope != null) {
+                    pti.setEnvelopeType(envelope.getType());
                 }
                 pti.getStackTrace().addAll(Arrays.asList(pt.getStackTrace()));
             }
@@ -486,5 +494,9 @@ public class Node implements Closeable {
 
     public boolean isShuttingDown() {
         return shuttingDown;
+    }
+
+    public <T> T createManager(Class T) {
+        return managerFactory.createManager(this, T);
     }
 }

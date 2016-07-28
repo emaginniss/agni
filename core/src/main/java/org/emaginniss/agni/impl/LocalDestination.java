@@ -84,7 +84,7 @@ public class LocalDestination extends Destination {
             }
         } catch (Exception e) {
             timesFailed.incrementAndGet();
-            throw new RuntimeException(e);
+            return new PayloadAndAttachments(e);
         } finally {
             current.decrementAndGet();
             totalTimeSpent.addAndGet(System.currentTimeMillis() - start);

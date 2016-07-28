@@ -141,4 +141,8 @@ public class Configuration {
     public JsonObject getObject() {
         return object;
     }
+
+    public boolean has(String key) {
+        return object.has(key);
+    }
 }

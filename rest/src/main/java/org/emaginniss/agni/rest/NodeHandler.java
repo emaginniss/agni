@@ -115,7 +115,7 @@ public class NodeHandler extends AbstractHandler {
         Map<String, String> variables = new HashMap<>();
         for (String p : current.getPathParts()) {
             if (p.startsWith("${")) {
-                variables.put(p, variableValues.remove(0));
+                variables.put(p.substring(2, p.length() - 1), variableValues.remove(0));
             }
         }
         try {

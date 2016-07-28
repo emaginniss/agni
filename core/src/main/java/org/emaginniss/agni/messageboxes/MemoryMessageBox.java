@@ -29,10 +29,9 @@ package org.emaginniss.agni.messageboxes;
 
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.Component;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component(value = "memory", isDefault = true)
@@ -43,7 +42,7 @@ public class MemoryMessageBox implements MessageBox {
     private LinkedList<Envelope> queue = new LinkedList<>();
 
     @Override
-    public void enqueue(Envelope envelope) {
+    public void enqueue(@NotNull Envelope envelope) {
         synchronized (this) {
             queue.addLast(envelope);
             currentSize.incrementAndGet();
@@ -53,11 +52,9 @@ public class MemoryMessageBox implements MessageBox {
     }
 
     @Override
-    public List<Envelope> dequeue(int max, boolean wait) throws InterruptedException {
-        List<Envelope> out = new ArrayList<>();
-
+    public Envelope dequeue(boolean wait) throws InterruptedException {
         synchronized (this) {
-            while (out.size() == 0) {
+            while (true) {
                 if (queue.size() == 0) {
                     if (wait) {
                         this.wait();
@@ -66,15 +63,12 @@ public class MemoryMessageBox implements MessageBox {
                     }
                 }
 
-                while (queue.size() > 0 && out.size() < max) {
-                    out.add(queue.removeFirst());
+                if (queue.size() > 0) {
+                    currentSize.decrementAndGet();
+                    return queue.removeFirst();
                 }
-
-                currentSize.addAndGet(0 - out.size());
             }
         }
-
-        return out;
     }
 
     public int getMaximumSize() {

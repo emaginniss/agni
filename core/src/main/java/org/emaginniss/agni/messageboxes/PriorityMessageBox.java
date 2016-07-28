@@ -31,7 +31,6 @@ import org.emaginniss.agni.*;
 import org.emaginniss.agni.annotations.Component;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -56,10 +55,10 @@ public class PriorityMessageBox implements MessageBox {
     }
 
     @Override
-    public List<Envelope> dequeue(int max, boolean wait) throws InterruptedException {
+    public Envelope dequeue(boolean wait) throws InterruptedException {
         while (true) {
             synchronized (this) {
-                List<Envelope> out = pull(max);
+                Envelope out = pull();
                 if (out != null) {
                     return out;
                 }
@@ -68,7 +67,7 @@ public class PriorityMessageBox implements MessageBox {
                 } else {
                     return null;
                 }
-                out = pull(max);
+                out = pull();
                 if (out != null) {
                     return out;
                 }
@@ -76,9 +75,9 @@ public class PriorityMessageBox implements MessageBox {
         }
     }
 
-    private List<Envelope> pull(int max) throws InterruptedException {
+    private Envelope pull() throws InterruptedException {
         for (MessageBox mb : messageBoxes.values()) {
-            List<Envelope> out = mb.dequeue(max, false);
+            Envelope out = mb.dequeue(false);
             if (out != null) {
                 return out;
             }

@@ -32,15 +32,13 @@ import org.emaginniss.agni.annotations.ComponentType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 @ComponentType
 public interface MessageBox {
 
     void enqueue(@NotNull Envelope envelope);
 
     @Nullable
-    List<Envelope> dequeue(int max, boolean wait) throws InterruptedException;
+    Envelope dequeue(boolean wait) throws InterruptedException;
 
     int getMaximumSize();
 

@@ -27,24 +27,9 @@
 
 package org.emaginniss.agni.rest;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.io.IOUtils;
-import org.emaginniss.agni.Agni;
-import org.emaginniss.agni.AgniBuilder;
-import org.emaginniss.agni.Configuration;
-import org.emaginniss.agni.PayloadAndAttachments;
-import org.emaginniss.agni.attachments.Attachment;
-import org.emaginniss.agni.attachments.InputStreamAttachment;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Created by Eric on 7/25/2015.

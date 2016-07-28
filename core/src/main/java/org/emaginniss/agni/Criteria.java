@@ -27,9 +27,17 @@
 
 package org.emaginniss.agni;
 
+import java.util.Map;
 import java.util.TreeMap;
 
 public class Criteria extends TreeMap<String, String> {
+
+    public Criteria() {
+    }
+
+    public Criteria(Map<? extends String, ? extends String> m) {
+        super(m);
+    }
 
     public Criteria add(String key, String value) {
         put(key, value);

@@ -44,9 +44,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by Eric on 7/25/2015.
- */
 public class RestServerTest {
 
     private static AtomicLong successCount = new AtomicLong(0);

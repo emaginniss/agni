@@ -34,8 +34,10 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.emaginniss.agni.rest.RestServer;
+import org.emaginniss.agni.scheduler.Scheduler;
 
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * Created by Eric on 7/19/2015.
@@ -51,6 +53,7 @@ public class Bootstrap {
     }
 
     private RestServer restServer;
+    private Scheduler scheduler;
 
     public boolean initialize(String... args) throws Exception {
         BasicConfigurator.configure();
@@ -98,20 +101,26 @@ public class Bootstrap {
         Agni.initialize(config.getChild("node"));
         Thread.sleep(1000);
 
-        for (String subscriber : config.getStringArray("subscribers")) {
-            log.info("Loading subscriber " + subscriber);
-            try {
-                Object instance = Class.forName(subscriber).newInstance();
-                Agni.register(instance);
-            } catch (Exception e) {
-                log.error("Unable to instantiate subscriber " + subscriber, e);
-            }
-        }
+        Arrays.stream(config.getStringArray("subscribers")).forEach(this::instantiateSubscriber);
 
         if (config.getChild("rest").getMap("connectors").size() > 0) {
             restServer = new RestServer(config.getChild("rest"));
         }
+
+        if (config.has("scheduler")) {
+            scheduler = new Scheduler(Agni.getNode(), config.getChild("scheduler"));
+        }
         return true;
+    }
+
+    private void instantiateSubscriber(String subscriber) {
+        log.info("Loading subscriber " + subscriber);
+        try {
+            Object instance = Class.forName(subscriber).newInstance();
+            Agni.register(instance);
+        } catch (Exception e) {
+            log.error("Unable to instantiate subscriber " + subscriber, e);
+        }
     }
 
     public InputStream findConfig(String... args) throws IOException {

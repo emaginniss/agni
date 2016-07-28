@@ -1,5 +1,7 @@
 package org.emaginniss.agni.rest;
 
+import org.emaginniss.agni.Execute;
+
 import java.util.regex.Pattern;
 
 /**
@@ -31,7 +33,7 @@ public class EndpointBuilder {
         return this;
     }
 
-    public EndpointBuilder execute(String execute) {
+    public EndpointBuilder execute(Execute execute) {
         endpoint.setExecute(execute);
         return this;
     }
