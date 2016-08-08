@@ -30,6 +30,7 @@ package org.emaginniss.agni;
 import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Criterion;
 import org.emaginniss.agni.annotations.Subscribe;
+import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,13 +50,13 @@ public class LocalNodeTest {
 
     @Test
     public void testNodeCreation() throws Exception {
-        Node node = new Node();
+        Node node = new NodeImpl();
         node.shutdown();
     }
 
     @Test
     public void testSimpleRegister1() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             node.register(new Object() {
                 @Subscribe(typeClass = String.class)
                 public void handleString() {
@@ -68,7 +69,7 @@ public class LocalNodeTest {
 
     @Test
     public void testSimpleRegister2() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             node.register(new Object() {
                 @Subscribe
                 public void handleString(String in) {
@@ -81,7 +82,7 @@ public class LocalNodeTest {
 
     @Test
     public void testSimpleRegister3() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             node.register(new Object() {
                 @Subscribe(typeName = "java.lang.String")
                 public void handleString() {
@@ -94,7 +95,7 @@ public class LocalNodeTest {
 
     @Test
     public void testCriteriaRegister1() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             node.register(new Object() {
                 @Subscribe(typeClass = String.class, criteria = { @Criterion(key = "x", value = "y")})
                 public void handleString() {
@@ -110,7 +111,7 @@ public class LocalNodeTest {
 
     @Test
     public void testCriteriaRegister2() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             node.register(new Object() {
                 @Subscribe(typeClass = String.class, criteria = { @Criterion(key = "x", value = "y")})
                 public void handleString1() {
@@ -131,7 +132,7 @@ public class LocalNodeTest {
 
     @Test
     public void testUnregister() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             Object obj = new Object() {
                 @Subscribe(typeClass = String.class)
                 public void handleString1() {
@@ -148,7 +149,7 @@ public class LocalNodeTest {
 
     @Test
     public void testSpecificUnregister() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             Object obj = new Object() {
                 @Subscribe(typeClass = String.class)
                 public void handleString() {
@@ -172,7 +173,7 @@ public class LocalNodeTest {
 
     @Test
     public void testSend() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicInteger receivedCount = new AtomicInteger(0);
             Object obj = new Object() {
                 @Subscribe(typeClass = Integer.class)
@@ -191,7 +192,7 @@ public class LocalNodeTest {
 
     @Test
     public void testRequest() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             Object obj = new Object() {
                 @Subscribe(typeClass = Integer.class)
                 public int handleInt(int in) {
@@ -207,7 +208,7 @@ public class LocalNodeTest {
 
     @Test
     public void testBroadcast() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicInteger receivedCount = new AtomicInteger(0);
             Object obj = new Object() {
                 @Subscribe(typeClass = Integer.class)
@@ -236,7 +237,7 @@ public class LocalNodeTest {
 
     @Test
     public void testRequestAll() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             Object obj = new Object() {
                 @Subscribe(typeClass = Integer.class)
                 public int handleInt1(int in) {

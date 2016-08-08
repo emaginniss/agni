@@ -30,9 +30,6 @@ package org.emaginniss.agni.envelopefilters;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.ComponentType;
 
-/**
- * Created by Eric on 7/3/2015.
- */
 @ComponentType
 public interface EnvelopeFilter {
 

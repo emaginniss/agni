@@ -31,9 +31,6 @@ import org.emaginniss.agni.Criteria;
 
 import java.util.*;
 
-/**
- * Created by Eric on 7/24/2015.
- */
 public class StatsResponse {
 
     private String uuid;

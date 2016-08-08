@@ -30,8 +30,8 @@ package org.emaginniss.agni.messageboxes;
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.Component;
-import org.emaginniss.agni.util.ExtendedDataInputStream;
-import org.emaginniss.agni.util.ExtendedDataOutputStream;
+import org.emaginniss.agni.util.EnvelopeInputStream;
+import org.emaginniss.agni.util.EnvelopeOutputStream;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -117,10 +117,10 @@ public class FileBackedMessageBox implements MessageBox {
             Path outputPath = Files.createTempFile(storageDir, "mb", ".dat");
             FileOutputStream fos = new FileOutputStream(outputPath.toFile());
             GZIPOutputStream gzos = new GZIPOutputStream(fos);
-            ExtendedDataOutputStream dos = new ExtendedDataOutputStream(gzos);
+            EnvelopeOutputStream dos = new EnvelopeOutputStream(gzos);
 
             for (Envelope envelope : writeQueue) {
-                envelope.write(dos);
+                dos.write(envelope);
             }
 
             dos.close();
@@ -141,12 +141,12 @@ public class FileBackedMessageBox implements MessageBox {
             Path outputPath = storage.removeFirst();
             FileInputStream fis = new FileInputStream(outputPath.toFile());
             GZIPInputStream gzis = new GZIPInputStream(fis);
-            ExtendedDataInputStream dis = new ExtendedDataInputStream(gzis);
+            EnvelopeInputStream dis = new EnvelopeInputStream(gzis);
 
             int count = 0;
             while (true) {
                 try {
-                    readQueue.add(Envelope.read(dis));
+                    readQueue.add(dis.read());
                     count++;
                 } catch (EOFException e) {
                     break;

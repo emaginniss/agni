@@ -30,9 +30,6 @@ package org.emaginniss.agni.envelopefilters;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.Component;
 
-/**
- * Created by Eric on 7/3/2015.
- */
 @Component(value = "permitAll", isDefault = true)
 public class PermitAllEnvelopeFilter implements EnvelopeFilter {
 

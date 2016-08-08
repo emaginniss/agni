@@ -33,17 +33,16 @@ import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Factory;
 import org.emaginniss.agni.annotations.Component;
 import org.emaginniss.agni.envelopefilters.EnvelopeFilter;
-import org.emaginniss.agni.util.ExtendedDataInputStream;
-import org.emaginniss.agni.util.ExtendedDataOutputStream;
+import org.emaginniss.agni.util.EnvelopeInputStream;
+import org.emaginniss.agni.util.EnvelopeOutputStream;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
-/**
- * Created by Eric on 6/13/2015.
- */
 @Component("defaultSocketsClient")
 public class DefaultSocketsClient implements Connection, Runnable {
 
@@ -56,8 +55,8 @@ public class DefaultSocketsClient implements Connection, Runnable {
     private String uuid;
     private String displayName;
     private Socket socket;
-    private ExtendedDataInputStream in;
-    private ExtendedDataOutputStream out;
+    private EnvelopeInputStream in;
+    private EnvelopeOutputStream out;
     private Thread connectionThread;
     private boolean shutdown = false;
     private int failureCount = 0;
@@ -95,7 +94,8 @@ public class DefaultSocketsClient implements Connection, Runnable {
     @Override
     public boolean forwardMessage(Envelope envelope, String targetNodeUuid) {
         try {
-            envelope.write(out);
+            out.write(envelope);
+            out.flush();
             return true;
         } catch (IOException e) {
             log.error("Error forwarding message - " + envelope.getType() + " - " + envelope.getNodeUuid(), e);
@@ -110,17 +110,18 @@ public class DefaultSocketsClient implements Connection, Runnable {
                 if (socket == null) {
                     socket = new Socket(host, port);
 
-                    out = new ExtendedDataOutputStream(socket.getOutputStream());
+                    out = new EnvelopeOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                     out.write(parent.getUuid());
                     out.write(parent.getDisplayName());
+                    out.flush();
 
-                    in = new ExtendedDataInputStream(socket.getInputStream());
+                    in = new EnvelopeInputStream(new BufferedInputStream(socket.getInputStream()));
                     uuid = in.readString();
                     displayName = in.readString();
 
                     parent.enableConnection(this, uuid, displayName);
                 }
-                Envelope e = Envelope.read(in);
+                Envelope e = in.read();
                 if (envelopeFilter.filter(e)) {
                     parent.handleIncomingEnvelope(e);
                 }

@@ -29,9 +29,6 @@ package org.emaginniss.agni.connectionfilters;
 
 import org.emaginniss.agni.annotations.Component;
 
-/**
- * Created by Eric on 7/3/2015.
- */
 @Component(value = "permitAll", isDefault = true)
 public class PermitAllConnectionFilter implements ConnectionFilter {
 

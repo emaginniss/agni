@@ -30,6 +30,7 @@ package org.emaginniss.agni;
 import com.google.gson.JsonParser;
 import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
+import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class TwoNodeTest {
 
     @Test
     public void testNodeCreation() throws Exception {
-        try (Node nodeA = new Node(nodeAConf); Node nodeB = new Node(nodeBConf)) {
+        try (Node nodeA = new NodeImpl(nodeAConf); Node nodeB = new NodeImpl(nodeBConf)) {
             Thread.sleep(1000);
             nodeA.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -109,7 +110,7 @@ public class TwoNodeTest {
     public void testSending() throws Exception {
         final AtomicInteger hitCount = new AtomicInteger(0);
 
-        try (Node nodeA = new Node(nodeAConf); Node nodeB = new Node(nodeBConf)) {
+        try (Node nodeA = new NodeImpl(nodeAConf); Node nodeB = new NodeImpl(nodeBConf)) {
             Thread.sleep(1000);
             nodeA.register(new Object() {
                 @Subscribe(typeName = "Message1")

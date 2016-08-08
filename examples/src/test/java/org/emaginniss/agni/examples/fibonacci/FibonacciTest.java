@@ -38,6 +38,6 @@ public class FibonacciTest {
         Agni.initialize();
         Agni.register(new FibonacciHandler());
         FibonacciManager fm = Agni.createManager(FibonacciManager.class);
-        Assert.assertEquals(13, fm.calculate(7));
+        Assert.assertEquals(13, fm.calculate(7).intValue());
     }
 }

@@ -1,0 +1,87 @@
+{
+    "logFile": "src/main/resources/org/emaginniss/agni/examples/fibonacci/log4j.properties",
+    "connections": {
+        "autoDiscovery": {
+            "type": "autoDiscovery"
+        }
+    },
+    "subscribers": [
+        {
+            "class": "org.emaginniss.agni.grid.GridServerHandler",
+            "jarDirs": [
+                "location"
+            ],
+            "persistence": {
+                "type": "",
+                "driverClass": "",
+                "url": "",
+                "username": "",
+                "password": ""
+            },
+            "instanceAdapter": {
+                "type": "process"
+            },
+            "groups": {
+                "group1": {
+                    "min": 1,
+                    "max": 3,
+                    "targetMPS": 10000,
+                    "adapterParams": {
+
+                    },
+                    "bootstrap": {
+                        "logFile": "src/main/resources/org/emaginniss/agni/examples/fibonacci/log4j.properties",
+                        "connections": {
+                            "autoDiscovery": {
+                                "type": "autoDiscovery"
+                            }
+                        },
+                        "subscribers": [
+                            "org.emaginniss.agni.examples.fibonacci.FibonacciHandler"
+                        ]
+                    }
+                },
+                "group2": {
+                    "min": 1,
+                    "max": 3,
+                    "targetMPS": 10000,
+                    "adapterParams": {
+
+                    },
+                    "bootstrap": {
+                        "logFile": "src/main/resources/org/emaginniss/agni/examples/fibonacci/log4j.properties",
+                        "connections": {
+                            "autoDiscovery": {
+                                "type": "autoDiscovery"
+                            }
+                        },
+                        "subscribers": [
+                            "org.emaginniss.agni.examples.fibonacci.FibonacciHandler"
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "rest": {
+        "connectors": {
+            "http": {
+                "port": 8080
+            }
+        },
+        "endpoints": [
+            {
+                "path": "fib/${index}",
+                "method": "GET",
+                "payload": "new",
+                "payloadType": "org.emaginniss.agni.examples.fibonacci.FibonacciRequest",
+                "inject": {
+                    "index": "${index}"
+                },
+                "response": "payload"
+            }
+        ]
+    },
+    "scheduler": {
+    }
+}

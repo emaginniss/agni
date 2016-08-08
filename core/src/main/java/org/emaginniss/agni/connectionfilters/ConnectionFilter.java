@@ -29,9 +29,6 @@ package org.emaginniss.agni.connectionfilters;
 
 import org.emaginniss.agni.annotations.ComponentType;
 
-/**
- * Created by Eric on 7/3/2015.
- */
 @ComponentType
 public interface ConnectionFilter {
 

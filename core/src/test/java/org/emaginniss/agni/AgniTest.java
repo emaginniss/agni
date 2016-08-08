@@ -36,9 +36,6 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Created by Eric on 7/14/2015.
- */
 public class AgniTest {
 
     @Before

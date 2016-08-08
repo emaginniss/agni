@@ -29,15 +29,17 @@ package org.emaginniss.agni.examples.fibonacci;
 
 import org.emaginniss.agni.annotations.Subscribe;
 
+import java.math.BigInteger;
+
 public class FibonacciHandler {
 
     @Subscribe
     public FibonacciResponse handle(FibonacciRequest in) {
         long start = System.currentTimeMillis();
-        long previous = 0;
-        long current = 1;
+        BigInteger previous = new BigInteger("0");
+        BigInteger current = new BigInteger("1");
         for (int i = 1; i < in.getIndex(); i++) {
-            long hold = previous + current;
+            BigInteger hold = previous.add(current);
             previous = current;
             current = hold;
         }

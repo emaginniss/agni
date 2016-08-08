@@ -30,6 +30,7 @@ package org.emaginniss.agni.rest;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.emaginniss.agni.Configuration;
+import org.emaginniss.agni.Node;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -42,14 +43,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- * Created by Eric on 7/25/2015.
- */
 public class NodeHandler extends AbstractHandler {
 
     private Map<String, PathSegment> rootPathSegmentByMethod = new HashMap<>();
 
-    public NodeHandler(Configuration[] endpointConfigs) {
+    public NodeHandler(Node node, Configuration[] endpointConfigs) {
         for (Configuration endpointConfig : endpointConfigs) {
             Endpoint endpoint;
             String path = endpointConfig.getString("path", null);
@@ -67,7 +65,7 @@ public class NodeHandler extends AbstractHandler {
             String method = endpointConfig.getString("method", "GET");
             String customClass = endpointConfig.getString("custom", null);
             if (customClass == null) {
-                endpoint = new DefaultEndpoint(endpointConfig, path);
+                endpoint = new DefaultEndpoint(node, endpointConfig, path);
             } else {
                 try {
                     endpoint = (Endpoint) Class.forName(customClass).getConstructor(Configuration.class).newInstance(endpointConfig);

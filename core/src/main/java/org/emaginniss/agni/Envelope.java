@@ -27,22 +27,17 @@
 
 package org.emaginniss.agni;
 
-import org.emaginniss.agni.attachments.Attachment;
 import org.emaginniss.agni.attachments.Attachments;
-import org.emaginniss.agni.util.ExtendedDataInputStream;
-import org.emaginniss.agni.util.ExtendedDataOutputStream;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.UUID;
 
 public class Envelope {
 
-    private String uuid = UUID.randomUUID().toString();
+    private String uuid;
     private String destinationUuid;
     private String nodeUuid;
     private String responseToUuid;
-    private String []path = new String[0];
+    private String[] path = new String[0];
     private String type;
     private Criteria criteria = new Criteria();
     private String className;
@@ -52,9 +47,11 @@ public class Envelope {
     private Attachments attachments = new Attachments();
 
     public Envelope() {
+        this.uuid = UUID.randomUUID().toString();
     }
 
     public Envelope(String type, String className, String payload, Priority priority, Attachments attachments, Criteria criteria, boolean responseExpected) {
+        this.uuid = UUID.randomUUID().toString();
         this.type = type;
         this.className = className;
         this.payload = payload;
@@ -62,6 +59,21 @@ public class Envelope {
         this.attachments = attachments;
         this.criteria = criteria;
         this.responseExpected = responseExpected;
+    }
+
+    public Envelope(String uuid, String nodeUuid, String destinationUuid, String responseToUuid, String[] path, String type, Criteria criteria, String className, String payload, Priority priority, boolean responseExpected, Attachments attachments) {
+        this.uuid = uuid;
+        this.nodeUuid = nodeUuid;
+        this.destinationUuid = destinationUuid;
+        this.responseToUuid = responseToUuid;
+        this.path = path;
+        this.type = type;
+        this.criteria = criteria;
+        this.className = className;
+        this.payload = payload;
+        this.priority = priority;
+        this.responseExpected = responseExpected;
+        this.attachments = attachments;
     }
 
     public String getUuid() {
@@ -134,47 +146,6 @@ public class Envelope {
 
     public void setResponseExpected(boolean responseExpected) {
         this.responseExpected = responseExpected;
-    }
-
-    public void write(ExtendedDataOutputStream dos) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ExtendedDataOutputStream local = new ExtendedDataOutputStream(baos);
-        local.write(uuid);
-        local.write(nodeUuid);
-        local.write(destinationUuid);
-        local.write(responseToUuid);
-        local.write(path);
-        local.write(type);
-        local.write(criteria);
-        local.write(className);
-        local.write(payload);
-        local.write(priority);
-        local.writeBoolean(responseExpected);
-        local.writeInt(attachments.size());
-        local.flush();
-
-        dos.write(baos.toByteArray());
-        for (String key : attachments.keySet()) {
-            dos.write(key, attachments.get(key));
-        }
-    }
-
-    public static Envelope read(ExtendedDataInputStream dis) throws IOException {
-        Envelope envelope = new Envelope();
-        envelope.uuid = dis.readString();
-        envelope.nodeUuid = dis.readString();
-        envelope.destinationUuid = dis.readString();
-        envelope.responseToUuid = dis.readString();
-        envelope.path = dis.readStringArray();
-        envelope.type = dis.readString();
-        envelope.criteria = dis.readCriteria();
-        envelope.className = dis.readString();
-        envelope.payload = dis.readString();
-        envelope.priority = dis.readPriority();
-        envelope.responseExpected = dis.readBoolean();
-        envelope.attachments = dis.readAttachments();
-
-        return envelope;
     }
 
     public boolean hasVisited(String uuid) {

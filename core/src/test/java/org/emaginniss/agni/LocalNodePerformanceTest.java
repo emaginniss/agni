@@ -28,21 +28,19 @@
 package org.emaginniss.agni;
 
 import org.emaginniss.agni.annotations.Subscribe;
+import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Created by Eric on 7/18/2015.
- */
 public class LocalNodePerformanceTest {
 
     @Test
     public void singleThreadSendTest() throws Exception {
         final int messageTotal = 10000;
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicLong counter = new AtomicLong(0);
             node.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -68,7 +66,7 @@ public class LocalNodePerformanceTest {
         final int messageTotal = 10000;
         final int threadTotal = 100;
         Assert.assertEquals(0, messageTotal % threadTotal);
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicLong counter = new AtomicLong(0);
             node.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -105,7 +103,7 @@ public class LocalNodePerformanceTest {
     @Test
     public void singleThreadRequestTest() throws Exception {
         final int messageTotal = 10000;
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicLong counter = new AtomicLong(0);
             node.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -132,7 +130,7 @@ public class LocalNodePerformanceTest {
         final int messageTotal = 10000;
         final int threadTotal = 100;
         Assert.assertEquals(0, messageTotal % threadTotal);
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicLong counter = new AtomicLong(0);
             node.register(new Object() {
                 @Subscribe(typeName = "Message1")

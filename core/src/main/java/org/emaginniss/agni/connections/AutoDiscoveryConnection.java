@@ -42,9 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by Eric on 7/14/2015.
- */
 @Component(value = "autoDiscovery", isDefault = true)
 public class AutoDiscoveryConnection implements Connection, ConnectionParent {
 

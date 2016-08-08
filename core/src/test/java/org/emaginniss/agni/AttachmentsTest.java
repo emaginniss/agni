@@ -31,6 +31,7 @@ import com.google.gson.JsonParser;
 import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.attachments.Attachments;
+import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,9 +42,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by Eric on 7/18/2015.
- */
 public class AttachmentsTest {
 
     @Before
@@ -54,7 +52,7 @@ public class AttachmentsTest {
 
     @Test
     public void singleNodeAttachmentSendTest() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicLong counter = new AtomicLong(0);
             node.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -72,7 +70,7 @@ public class AttachmentsTest {
 
     @Test
     public void singleNodeAttachmentRequestTest() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicLong counter = new AtomicLong(0);
             node.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -90,7 +88,7 @@ public class AttachmentsTest {
 
     @Test
     public void singleNodeAttachmentRequestResponseTest() throws Exception {
-        try (Node node = new Node()) {
+        try (Node node = new NodeImpl()) {
             final AtomicLong counter = new AtomicLong(0);
             node.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -117,7 +115,7 @@ public class AttachmentsTest {
         Node nodeB = null;
         try {
             final AtomicLong counter = new AtomicLong(0);
-            nodeA = new Node(nodeAConf);
+            nodeA = new NodeImpl(nodeAConf);
             nodeA.register(new Object() {
                 @Subscribe(typeName = "Message1")
                 public void handle(Attachments atts) throws Exception {
@@ -127,7 +125,7 @@ public class AttachmentsTest {
                 }
             });
             Thread.sleep(1000);
-            nodeB = new Node(nodeBConf);
+            nodeB = new NodeImpl(nodeBConf);
             Thread.sleep(1000);
 
             new AgniBuilder("").type("Message1").attachment("att1", "This is a test".getBytes()).send(nodeB);
@@ -148,7 +146,7 @@ public class AttachmentsTest {
         Node nodeA = null;
         Node nodeB = null;
         try {
-            nodeA = new Node(nodeAConf);
+            nodeA = new NodeImpl(nodeAConf);
             final AtomicLong counter = new AtomicLong(0);
             nodeA.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -160,7 +158,7 @@ public class AttachmentsTest {
                 }
             });
             Thread.sleep(1000);
-            nodeB = new Node(nodeBConf);
+            nodeB = new NodeImpl(nodeBConf);
             Thread.sleep(1000);
 
             assertEquals("Howdy", new AgniBuilder("").type("Message1").attachment("att1", "This is a test".getBytes()).request(nodeB).getPayload());
@@ -180,7 +178,7 @@ public class AttachmentsTest {
         Node nodeA = null;
         Node nodeB = null;
         try {
-            nodeA = new Node(nodeAConf);
+            nodeA = new NodeImpl(nodeAConf);
             final AtomicLong counter = new AtomicLong(0);
             nodeA.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -192,7 +190,7 @@ public class AttachmentsTest {
                 }
             });
             Thread.sleep(1000);
-            nodeB = new Node(nodeBConf);
+            nodeB = new NodeImpl(nodeBConf);
             Thread.sleep(1000);
 
             PayloadAndAttachments<String> resp = new AgniBuilder("").type("Message1").attachment("att1", "This is a test".getBytes()).request(nodeB);
@@ -214,7 +212,7 @@ public class AttachmentsTest {
         Node nodeA = null;
         Node nodeB = null;
         try {
-            nodeA = new Node(nodeAConf);
+            nodeA = new NodeImpl(nodeAConf);
             final AtomicLong counter = new AtomicLong(0);
             nodeA.register(new Object() {
                 @Subscribe(typeName = "Message1")
@@ -234,7 +232,7 @@ public class AttachmentsTest {
                 }
             });
             Thread.sleep(1000);
-            nodeB = new Node(nodeBConf);
+            nodeB = new NodeImpl(nodeBConf);
             Thread.sleep(1000);
 
             byte []send = new byte[455 * 1024];

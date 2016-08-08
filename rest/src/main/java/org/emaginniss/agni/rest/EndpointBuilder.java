@@ -4,9 +4,6 @@ import org.emaginniss.agni.Execute;
 
 import java.util.regex.Pattern;
 
-/**
- * Created by Eric on 8/5/2015.
- */
 public class EndpointBuilder {
 
     private RestServer restServer;

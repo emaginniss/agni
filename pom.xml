@@ -21,6 +21,7 @@
         <module>rest</module>
         <module>scheduler</module>
         <module>bootstrap</module>
+        <module>grid</module>
         <module>examples</module>
     </modules>
 

@@ -30,9 +30,6 @@ package org.emaginniss.agni.connections;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Node;
 
-/**
- * Created by Eric on 7/14/2015.
- */
 public interface ConnectionParent {
 
     String getUuid();

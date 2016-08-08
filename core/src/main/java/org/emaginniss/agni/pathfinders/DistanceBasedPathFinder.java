@@ -39,9 +39,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/**
- * Created by Eric on 6/28/2015.
- */
 @Component(value = "distanceBased", isDefault = true)
 public class DistanceBasedPathFinder implements PathFinder {
 

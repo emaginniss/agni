@@ -27,8 +27,5 @@
 
 package org.emaginniss.agni.messages;
 
-/**
- * Created by Eric on 7/17/2015.
- */
 public class Ping {
 }

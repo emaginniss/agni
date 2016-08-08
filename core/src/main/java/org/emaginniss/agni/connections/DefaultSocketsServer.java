@@ -34,9 +34,11 @@ import org.emaginniss.agni.Factory;
 import org.emaginniss.agni.annotations.Component;
 import org.emaginniss.agni.connectionfilters.ConnectionFilter;
 import org.emaginniss.agni.envelopefilters.EnvelopeFilter;
-import org.emaginniss.agni.util.ExtendedDataInputStream;
-import org.emaginniss.agni.util.ExtendedDataOutputStream;
+import org.emaginniss.agni.util.EnvelopeInputStream;
+import org.emaginniss.agni.util.EnvelopeOutputStream;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -45,9 +47,6 @@ import java.net.SocketException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by Eric on 6/13/2015.
- */
 @Component("defaultSocketsServer")
 public class DefaultSocketsServer implements Connection, Runnable {
 
@@ -136,8 +135,8 @@ public class DefaultSocketsServer implements Connection, Runnable {
         private String uuid;
         private String displayName;
         private Socket socket;
-        private ExtendedDataInputStream in;
-        private ExtendedDataOutputStream out;
+        private EnvelopeInputStream in;
+        private EnvelopeOutputStream out;
 
         public SocketHandler(Socket socket) {
             super(parent.getNode().getThreadGroup(), parent.getDisplayName() + " - Server Thread");
@@ -147,13 +146,14 @@ public class DefaultSocketsServer implements Connection, Runnable {
         @Override
         public void run() {
             try {
-                in = new ExtendedDataInputStream(socket.getInputStream());
+                in = new EnvelopeInputStream(new BufferedInputStream(socket.getInputStream()));
                 uuid = in.readString();
                 displayName = in.readString();
 
-                out = new ExtendedDataOutputStream(socket.getOutputStream());
+                out = new EnvelopeOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                 out.write(parent.getUuid());
                 out.write(parent.getDisplayName());
+                out.flush();
 
                 if (!connectionFilter.filter(uuid, displayName)) {
                     socket.close();
@@ -168,7 +168,7 @@ public class DefaultSocketsServer implements Connection, Runnable {
 
             while (!socket.isClosed() && !shutdown) {
                 try {
-                    Envelope e = Envelope.read(in);
+                    Envelope e = in.read();
                     if (envelopeFilter.filter(e)) {
                         parent.handleIncomingEnvelope(e);
                     }
@@ -194,7 +194,8 @@ public class DefaultSocketsServer implements Connection, Runnable {
 
         public synchronized boolean forwardMessage(Envelope envelope) {
             try {
-                envelope.write(out);
+                out.write(envelope);
+                out.flush();
                 return true;
             } catch (IOException e) {
                 log.error("Error forwarding message - " + envelope.getType() + " - " + envelope.getNodeUuid(), e);

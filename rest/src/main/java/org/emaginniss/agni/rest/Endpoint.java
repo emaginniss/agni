@@ -31,9 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
-/**
- * Created by Eric on 7/25/2015.
- */
 public interface Endpoint {
 
     void handle(Map<String, String> pathVariables, HttpServletRequest request, HttpServletResponse response) throws Exception;

@@ -28,14 +28,12 @@
 package org.emaginniss.agni;
 
 import org.emaginniss.agni.attachments.Attachments;
+import org.emaginniss.agni.impl.NodeImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
-/**
- * Created by Eric on 7/14/2015.
- */
 public abstract class Agni {
 
     private static Node node;
@@ -45,7 +43,7 @@ public abstract class Agni {
             node.shutdown();
             node = null;
         }
-        node = new Node(configuration);
+        node = new NodeImpl(configuration);
     }
 
     public static void initialize() {

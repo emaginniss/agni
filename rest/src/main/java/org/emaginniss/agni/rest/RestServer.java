@@ -31,12 +31,10 @@ import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.emaginniss.agni.Configuration;
+import org.emaginniss.agni.Node;
 
 import java.util.Map;
 
-/**
- * Created by Eric on 7/24/2015.
- */
 public class RestServer {
 
     private static RestServer instance;
@@ -44,7 +42,7 @@ public class RestServer {
     private Server server;
     private NodeHandler nodeHandler;
 
-    public RestServer(Configuration config) throws Exception {
+    public RestServer(Node node, Configuration config) throws Exception {
         instance = this;
 
         server = new Server();
@@ -83,7 +81,7 @@ public class RestServer {
             server.addConnector(connector);
         }
 
-        nodeHandler = new NodeHandler(config.getArray("endpoints"));
+        nodeHandler = new NodeHandler(node, config.getArray("endpoints"));
         server.setHandler(nodeHandler);
 
         server.start();

@@ -37,11 +37,10 @@ import org.emaginniss.agni.rest.RestServer;
 import org.emaginniss.agni.scheduler.Scheduler;
 
 import java.io.*;
-import java.util.Arrays;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Created by Eric on 7/19/2015.
- */
 public class Bootstrap {
 
     private static final Logger log = Logger.getLogger(Bootstrap.class);
@@ -53,7 +52,6 @@ public class Bootstrap {
     }
 
     private RestServer restServer;
-    private Scheduler scheduler;
 
     public boolean initialize(String... args) throws Exception {
         BasicConfigurator.configure();
@@ -82,44 +80,97 @@ public class Bootstrap {
         }
 
         Configuration config = new Configuration(configEl.getAsJsonObject());
-        if (config.getString("logFile", null) != null) {
-            BasicConfigurator.resetConfiguration();
-            PropertyConfigurator.configure(config.getString("logFile", null));
-        }
+        initializeLogging(config);
 
         if (config.getBoolean("showLog", false)) {
             log.info("Log file:\n" + new GsonBuilder().setPrettyPrinting().create().toJson(config));
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                shutdown();
-            }
-        });
+        addShutdownHandler(Agni.getNode());
 
         Agni.initialize(config.getChild("node"));
         Thread.sleep(1000);
 
-        Arrays.stream(config.getStringArray("subscribers")).forEach(this::instantiateSubscriber);
-
-        if (config.getChild("rest").getMap("connectors").size() > 0) {
-            restServer = new RestServer(config.getChild("rest"));
-        }
-
-        if (config.has("scheduler")) {
-            scheduler = new Scheduler(Agni.getNode(), config.getChild("scheduler"));
-        }
+        buildHandlers(Agni.getNode(), config);
+        log.info("Bootstrap initialization complete");
         return true;
     }
 
-    private void instantiateSubscriber(String subscriber) {
-        log.info("Loading subscriber " + subscriber);
+    public void addShutdownHandler(final Node node) {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                shutdown(node);
+            }
+        });
+    }
+
+    public void buildHandlers(Node node, Configuration config) throws Exception {
+        if (config.has("scheduler")) {
+            log.info("Creating Scheduler...");
+            new Scheduler(node, config.getChild("scheduler"));
+        }
+
+        if (config.has("subscribers")) {
+            config.getObject().getAsJsonArray("subscribers").forEach(s -> instantiateSubscriber(node, s));
+        }
+
+        if (config.has("rest")) {
+            log.info("Creating REST system...");
+            restServer = new RestServer(node, config.getChild("rest"));
+        }
+    }
+
+    public void initializeLogging(Configuration config) {
+        if (config.getString("logFile", null) != null) {
+            BasicConfigurator.resetConfiguration();
+            PropertyConfigurator.configure(config.getString("logFile", null));
+        }
+    }
+
+    private void instantiateSubscriber(Node node, JsonElement subscriber) {
+        String className = null;
+        Configuration config = null;
+        if (subscriber.isJsonPrimitive()) {
+            className = subscriber.getAsString();
+            config = new Configuration();
+        } else if (subscriber.isJsonObject()) {
+            config = new Configuration(subscriber.getAsJsonObject());
+            className = config.getString("class", null);
+        }
+
+        log.info("Loading subscriber " + className);
         try {
-            Object instance = Class.forName(subscriber).newInstance();
-            Agni.register(instance);
+            Class clazz = Class.forName(className);
+            Constructor ctor = null;
+            for (Constructor test : clazz.getConstructors()) {
+                if (test.isAccessible()) {
+                    boolean canHandle = true;
+                    for (Class paramClass : test.getParameterTypes()) {
+                        if (!paramClass.equals(Configuration.class) && !paramClass.equals(Node.class)) {
+                            canHandle = false;
+                        }
+                    }
+                    if (canHandle && (ctor == null || ctor.getParameterTypes().length < test.getParameterTypes().length)) {
+                        ctor = test;
+                    }
+                }
+            }
+            if (ctor == null) {
+                node.register(clazz.newInstance());
+            } else {
+                List<Object> params = new ArrayList<>();
+                for (Class paramClass : ctor.getParameterTypes()) {
+                    if (paramClass.equals(Configuration.class)) {
+                        params.add(config);
+                    } else if (paramClass.equals(Node.class)) {
+                        params.add(node);
+                    }
+                }
+                node.register(ctor.newInstance(params.toArray()));
+            }
         } catch (Exception e) {
-            log.error("Unable to instantiate subscriber " + subscriber, e);
+            log.error("Unable to instantiate subscriber " + className, e);
         }
     }
 
@@ -143,10 +194,10 @@ public class Bootstrap {
         return Bootstrap.class.getResourceAsStream("/agni.json");
     }
 
-    public void shutdown() {
+    public void shutdown(Node node) {
         if (restServer != null) {
             restServer.shutdown();
         }
-        Agni.shutdown();
+        node.shutdown();
     }
 }

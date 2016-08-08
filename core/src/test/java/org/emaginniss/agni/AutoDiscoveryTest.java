@@ -30,6 +30,7 @@ package org.emaginniss.agni;
 import com.google.gson.JsonParser;
 import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
+import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,9 +63,9 @@ public class AutoDiscoveryTest {
         Node nodeA = null;
         Node nodeB = null;
         try {
-            nodeA = new Node(nodeAConf);
+            nodeA = new NodeImpl(nodeAConf);
             Thread.sleep(1000);
-            nodeB = new Node(nodeBConf);
+            nodeB = new NodeImpl(nodeBConf);
 
             Thread.sleep(1000);
             nodeA.register(new Object() {
@@ -131,15 +132,15 @@ public class AutoDiscoveryTest {
         Node nodeD = null;
         Node nodeE = null;
         try {
-            nodeA = new Node(nodeAConf);
+            nodeA = new NodeImpl(nodeAConf);
             Thread.sleep(1000);
-            nodeB = new Node(nodeBConf);
+            nodeB = new NodeImpl(nodeBConf);
             Thread.sleep(1000);
-            nodeC = new Node(nodeCConf);
+            nodeC = new NodeImpl(nodeCConf);
             Thread.sleep(1000);
-            nodeD = new Node(nodeDConf);
+            nodeD = new NodeImpl(nodeDConf);
             Thread.sleep(1000);
-            nodeE = new Node(nodeEConf);
+            nodeE = new NodeImpl(nodeEConf);
             Thread.sleep(1000);
 
             nodeA.register(new Object() {

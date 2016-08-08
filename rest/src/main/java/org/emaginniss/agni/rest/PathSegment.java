@@ -30,9 +30,6 @@ package org.emaginniss.agni.rest;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Eric on 7/25/2015.
- */
 public class PathSegment {
 
     private Map<String, PathSegment> children = new HashMap<>();

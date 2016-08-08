@@ -86,7 +86,7 @@ public class RestServerTest {
             }
         });
 
-        restServer = new RestServer(new Configuration(
+        restServer = new RestServer(Agni.getNode(), new Configuration(
                 new JsonParser().parse("" +
                         "{" +
                         "  'connectors': { 'http': { 'port': 8080 } }," +

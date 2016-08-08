@@ -42,11 +42,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Eric on 7/25/2015.
- */
 public class DefaultEndpoint implements Endpoint{
 
+    private Node node;
     private Execute execute = Execute.request;
     private String payload = "null";
     private String payloadType;
@@ -59,7 +57,8 @@ public class DefaultEndpoint implements Endpoint{
     private Map<String, String> inject = new HashMap<>();
     private Map<String, String> attachments = new HashMap<>();
 
-    public DefaultEndpoint(Configuration config, String path) {
+    public DefaultEndpoint(Node node, Configuration config, String path) {
+        this.node = node;
         payloadType = config.getString("payloadType", null);
 
         if (payloadType == null || payloadType.isEmpty()) {
@@ -93,16 +92,16 @@ public class DefaultEndpoint implements Endpoint{
         loadAttachments(builder, request);
 
         if (execute == Execute.send) {
-            builder.send();
+            builder.send(node);
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().flush();
         } else if (execute == Execute.broadcast) {
-            builder.broadcast();
+            builder.broadcast(node);
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().flush();
         } else if (execute == Execute.request) {
             try {
-                PayloadAndAttachments payloadAndAttachments = builder.request();
+                PayloadAndAttachments payloadAndAttachments = builder.request(node);
                 if (payloadAndAttachments == null) {
                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                     response.getWriter().flush();
@@ -119,7 +118,7 @@ public class DefaultEndpoint implements Endpoint{
                 }
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 Writer writer = response.getWriter();
-                writer.write(Agni.getNode().getSerializer().serialize(e));
+                writer.write(node.getSerializer().serialize(e));
                 writer.flush();
             }
         }
@@ -154,7 +153,7 @@ public class DefaultEndpoint implements Endpoint{
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
             Writer writer = response.getWriter();
-            writer.write(Agni.getNode().getSerializer().serialize(resp.getPayload()));
+            writer.write(node.getSerializer().serialize(resp.getPayload()));
             writer.flush();
         }
     }
@@ -196,21 +195,21 @@ public class DefaultEndpoint implements Endpoint{
             while ((line = reader.readLine()) != null) {
                 body.append(line);
             }
-            p = Agni.getNode().getSerializer().deserialize(body.toString(), payloadType);
+            p = node.getSerializer().deserialize(body.toString(), payloadType);
         } else {
-            p = Agni.getNode().getSerializer().deserialize(payload, payloadType);
+            p = node.getSerializer().deserialize(payload, payloadType);
         }
         return p;
     }
 
-    public static Object getRequestBody(HttpServletRequest request, String payloadType) throws IOException {
+    public Object getRequestBody(HttpServletRequest request, String payloadType) throws IOException {
         StringBuilder body = new StringBuilder();
         String line;
         BufferedReader reader = request.getReader();
         while ((line = reader.readLine()) != null) {
             body.append(line);
         }
-        return Agni.getNode().getSerializer().deserialize(body.toString(), payloadType);
+        return node.getSerializer().deserialize(body.toString(), payloadType);
     }
 
     public Execute getExecute() {

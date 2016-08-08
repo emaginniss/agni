@@ -31,9 +31,11 @@ import org.emaginniss.agni.Execute;
 import org.emaginniss.agni.managers.Inject;
 import org.emaginniss.agni.managers.ManagerMethod;
 
+import java.math.BigInteger;
+
 public interface FibonacciManager {
 
     @ManagerMethod(payloadClass = FibonacciRequest.class, execute = Execute.request, returnObject = "value")
-    long calculate(@Inject("index") int index);
+    BigInteger calculate(@Inject("index") int index);
 
 }

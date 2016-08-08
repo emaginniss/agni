@@ -37,9 +37,6 @@ import org.emaginniss.agni.messages.SubscriptionInfo;
 import java.util.Collection;
 import java.util.Set;
 
-/**
- * Created by Eric on 6/28/2015.
- */
 @ComponentType
 public interface PathFinder {
 

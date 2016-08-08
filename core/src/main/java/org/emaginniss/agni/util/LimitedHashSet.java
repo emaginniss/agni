@@ -30,9 +30,6 @@ package org.emaginniss.agni.util;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
-/**
- * Created by Eric on 8/2/2015.
- */
 public class LimitedHashSet<T> extends LinkedHashSet<T> {
 
     private int maxSize;

@@ -30,6 +30,7 @@ package org.emaginniss.agni;
 import com.google.gson.JsonParser;
 import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
+import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,10 +38,9 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Created by Eric on 7/18/2015.
- */
 public class AutoDiscoveryPerformanceTest {
+
+    public static final int MESSAGE_COUNT = 10000;
 
     private Configuration nodeAConf = new Configuration(new JsonParser().parse("{ 'uuid': 'nodeA', 'connections': { 'autoDiscovery': { 'type': 'autoDiscovery' }}}").getAsJsonObject());
     private Configuration nodeBConf = new Configuration(new JsonParser().parse("{ 'uuid': 'nodeB', 'connections': { 'autoDiscovery': { 'type': 'autoDiscovery' }}}").getAsJsonObject());
@@ -53,9 +53,9 @@ public class AutoDiscoveryPerformanceTest {
         BasicConfigurator.resetConfiguration();
         BasicConfigurator.configure();
 
-        nodeA = new Node(nodeAConf);
+        nodeA = new NodeImpl(nodeAConf);
         Thread.sleep(1000);
-        nodeB = new Node(nodeBConf);
+        nodeB = new NodeImpl(nodeBConf);
         Thread.sleep(1000);
     }
 
@@ -69,7 +69,7 @@ public class AutoDiscoveryPerformanceTest {
 
     @Test
     public void singleThreadSendTest() throws Exception {
-        final int messageTotal = 10000;
+        final int messageTotal = MESSAGE_COUNT;
         final AtomicLong counter = new AtomicLong(0);
         nodeA.register(new Object() {
             @Subscribe(typeName = "Message1")
@@ -92,7 +92,7 @@ public class AutoDiscoveryPerformanceTest {
 
     @Test
     public void multiThreadSendTest() throws Exception {
-        final int messageTotal = 10000;
+        final int messageTotal = MESSAGE_COUNT;
         final int threadTotal = 100;
         Assert.assertEquals(0, messageTotal % threadTotal);
         final AtomicLong counter = new AtomicLong(0);
@@ -130,7 +130,7 @@ public class AutoDiscoveryPerformanceTest {
 
     @Test
     public void singleThreadRequestTest() throws Exception {
-        final int messageTotal = 10000;
+        final int messageTotal = MESSAGE_COUNT;
         final AtomicLong counter = new AtomicLong(0);
         nodeA.register(new Object() {
             @Subscribe(typeName = "Message1")
@@ -153,7 +153,7 @@ public class AutoDiscoveryPerformanceTest {
 
     @Test
     public void multiThreadRequestTest() throws Exception {
-        final int messageTotal = 10000;
+        final int messageTotal = MESSAGE_COUNT;
         final int threadTotal = 100;
         Assert.assertEquals(0, messageTotal % threadTotal);
         final AtomicLong counter = new AtomicLong(0);

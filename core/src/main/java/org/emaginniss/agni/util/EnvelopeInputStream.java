@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Eric A Maginniss
+ * Copyright (c) 2015-2016, Eric A Maginniss
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,47 +27,82 @@
 
 package org.emaginniss.agni.util;
 
+import org.apache.commons.io.IOUtils;
 import org.emaginniss.agni.Criteria;
+import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Priority;
 import org.emaginniss.agni.attachments.Attachments;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
-public class ExtendedDataInputStream extends DataInputStream {
+public class EnvelopeInputStream implements Closeable {
 
-    public ExtendedDataInputStream(InputStream in) {
-        super(in);
+    private InputStream in;
+
+    public EnvelopeInputStream(InputStream in) {
+        this.in = in;
     }
 
-    public Priority readPriority() throws IOException {
-        return Priority.valueOf(readString());
+    public Envelope read() throws IOException {
+        String uuid = readString();
+        String nodeUuid = readString();
+        String destinationUuid = readString();
+        String responseToUuid = readString();
+        String []path = readStringArray();
+        String type = readString();
+
+        int criteriaLength = readInt();
+        Criteria criteria = new Criteria();
+        for (int i = 0; i < criteriaLength; i++) {
+            criteria.put(readString(), readString());
+        }
+
+        String className = readString();
+        String payload = readString();
+        Priority priority = Priority.valueOf(readString());
+        boolean responseExpected = readBoolean();
+
+        Attachments attachments = readAttachments();
+
+        return new Envelope(uuid, nodeUuid, destinationUuid, responseToUuid, path, type, criteria, className, payload, priority, responseExpected, attachments);
+    }
+
+    private boolean readBoolean() throws IOException {
+        return in.read() == 1;
+    }
+
+    private int readInt() throws IOException {
+        int ch1 = in.read();
+        int ch2 = in.read();
+        int ch3 = in.read();
+        int ch4 = in.read();
+        if ((ch1 | ch2 | ch3 | ch4) < 0) {
+            throw new EOFException();
+        }
+        return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + ch4);
+    }
+
+    private String[] readStringArray() throws IOException {
+        int length = readInt();
+        if (length == -1) {
+            return null;
+        }
+        String []out = new String[length];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = readString();
+        }
+        return out;
     }
 
     public String readString() throws IOException {
         int length = readInt();
-        if (length == 0) {
+        if (length == -1) {
             return null;
         }
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            sb.append(readChar());
-        }
-        return sb.toString();
-    }
-
-    public String []readStringArray() throws IOException {
-        int length = readInt();
-        if (length == 0) {
-            return new String[0];
-        }
-        List<String> out = new ArrayList<>();
-        for (int i = 0; i < length; i++) {
-            out.add(readString());
-        }
-        return out.toArray(new String[length]);
+        byte []out = new byte[length];
+        IOUtils.readFully(in, out);
+        return new String(out);
     }
 
     public Attachments readAttachments() throws IOException {
@@ -89,7 +124,7 @@ public class ExtendedDataInputStream extends DataInputStream {
             int total = 0;
             byte[] buffer = new byte[100 * 1024];
             while (total < length) {
-                int len = read(buffer, 0, Math.min(buffer.length, length - total));
+                int len = in.read(buffer, 0, Math.min(buffer.length, length - total));
                 os.write(buffer, 0, len);
                 total += len;
             }
@@ -104,14 +139,8 @@ public class ExtendedDataInputStream extends DataInputStream {
         return out;
     }
 
-    public Criteria readCriteria() throws IOException {
-        Criteria out = new Criteria();
-
-        int count = readInt();
-        for (int i = 0; i < count; i++) {
-            out.put(readString(), readString());
-        }
-
-        return out;
+    @Override
+    public void close() throws IOException {
+        in.close();
     }
 }

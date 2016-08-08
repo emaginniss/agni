@@ -27,9 +27,6 @@
 
 package org.emaginniss.agni.messages;
 
-/**
- * Created by Eric on 8/2/2015.
- */
 public class StopRouting extends WhisperMessage {
 
     private String nodeUuid;

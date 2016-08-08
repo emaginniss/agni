@@ -27,9 +27,6 @@
 
 package org.emaginniss.agni.messages;
 
-/**
- * Created by Eric on 7/12/2015.
- */
 public class RemoveLink extends WhisperMessage {
 
     private String fromNodeUuid;

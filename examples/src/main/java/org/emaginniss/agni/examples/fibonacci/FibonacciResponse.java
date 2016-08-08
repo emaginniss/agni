@@ -27,15 +27,17 @@
 
 package org.emaginniss.agni.examples.fibonacci;
 
+import java.math.BigInteger;
+
 public class FibonacciResponse {
     private int index;
-    private long value;
+    private BigInteger value;
     private long duration;
 
     public FibonacciResponse() {
     }
 
-    public FibonacciResponse(int index, long value, long duration) {
+    public FibonacciResponse(int index, BigInteger value, long duration) {
         this.index = index;
         this.value = value;
         this.duration = duration;
@@ -49,11 +51,11 @@ public class FibonacciResponse {
         this.index = index;
     }
 
-    public long getValue() {
+    public BigInteger getValue() {
         return value;
     }
 
-    public void setValue(long value) {
+    public void setValue(BigInteger value) {
         this.value = value;
     }
 
