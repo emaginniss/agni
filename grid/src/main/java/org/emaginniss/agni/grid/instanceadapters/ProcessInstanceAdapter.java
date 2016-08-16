@@ -27,8 +27,35 @@
 
 package org.emaginniss.agni.grid.instanceadapters;
 
+import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.annotations.Component;
+import org.emaginniss.agni.grid.model.Instance;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component(value = "process", isDefault = true)
 public class ProcessInstanceAdapter implements InstanceAdapter {
+
+    private Map<String, Process> processes = new HashMap<>();
+
+    @Nullable
+    @Override
+    public Instance allocateInstance(String uuid, String groupName, Configuration adapterParams) {
+        //Runtime.getRuntime().exec("java", )
+        return null;
+    }
+
+    @Override
+    @NotNull
+    public Instance.Status queryInstance(String instanceId) {
+        return null;
+    }
+
+    @Override
+    public void shutdownInstance(String instanceId) {
+
+    }
 }

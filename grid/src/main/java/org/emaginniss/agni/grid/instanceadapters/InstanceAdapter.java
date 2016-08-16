@@ -27,8 +27,22 @@
 
 package org.emaginniss.agni.grid.instanceadapters;
 
+import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.annotations.ComponentType;
+import org.emaginniss.agni.grid.model.Instance;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @ComponentType
 public interface InstanceAdapter {
+
+    @Nullable
+    Instance allocateInstance(String uuid, String groupName, Configuration adapterParams);
+
+    @NotNull
+    Instance.Status queryInstance(String instanceId);
+
+    void shutdownInstance(String instanceId);
+
+
 }

@@ -126,6 +126,10 @@ public class Bootstrap {
             BasicConfigurator.resetConfiguration();
             PropertyConfigurator.configure(config.getString("logFile", null));
         }
+        if (config.getString("logResource", null) != null) {
+            BasicConfigurator.resetConfiguration();
+            PropertyConfigurator.configure(Bootstrap.class.getClassLoader().getResourceAsStream(config.getString("logResource", null)));
+        }
     }
 
     private void instantiateSubscriber(Node node, JsonElement subscriber) {
@@ -144,16 +148,14 @@ public class Bootstrap {
             Class clazz = Class.forName(className);
             Constructor ctor = null;
             for (Constructor test : clazz.getConstructors()) {
-                if (test.isAccessible()) {
-                    boolean canHandle = true;
-                    for (Class paramClass : test.getParameterTypes()) {
-                        if (!paramClass.equals(Configuration.class) && !paramClass.equals(Node.class)) {
-                            canHandle = false;
-                        }
+                boolean canHandle = true;
+                for (Class paramClass : test.getParameterTypes()) {
+                    if (!paramClass.equals(Configuration.class) && !paramClass.equals(Node.class)) {
+                        canHandle = false;
                     }
-                    if (canHandle && (ctor == null || ctor.getParameterTypes().length < test.getParameterTypes().length)) {
-                        ctor = test;
-                    }
+                }
+                if (canHandle && (ctor == null || ctor.getParameterTypes().length < test.getParameterTypes().length)) {
+                    ctor = test;
                 }
             }
             if (ctor == null) {
@@ -188,6 +190,11 @@ public class Bootstrap {
             if (f.exists() && f.isFile() && f.canRead()) {
                 log.debug("Loading config from file " + f.getAbsolutePath());
                 return new FileInputStream(f);
+            }
+            InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(confFile);
+            if (in != null) {
+                log.debug("Loading config from resource " + confFile);
+                return in;
             }
         }
         log.debug("Attempting to load agni.json from classpath");
