@@ -111,7 +111,7 @@ public abstract class Factory {
                 throw new RuntimeException(e);
             }
         } else {
-            Set<Object> parametersIn = new HashSet<>(Arrays.asList(parametersPassed));
+            List<Object> parametersIn = new ArrayList(Arrays.asList(parametersPassed));
             parametersIn.add(configuration);
 
             Constructor ctor = clazz.getConstructors()[0];

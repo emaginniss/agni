@@ -33,6 +33,7 @@ import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.PayloadAndAttachments;
 import org.emaginniss.agni.attachments.Attachments;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +83,9 @@ public class LocalDestination extends Destination {
             } else {
                 return new PayloadAndAttachments(response);
             }
+        } catch (InvocationTargetException e) {
+            timesFailed.incrementAndGet();
+            return new PayloadAndAttachments(e.getCause());
         } catch (Exception e) {
             timesFailed.incrementAndGet();
             return new PayloadAndAttachments(e);

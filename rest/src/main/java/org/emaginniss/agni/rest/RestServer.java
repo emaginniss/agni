@@ -45,9 +45,18 @@ public class RestServer {
     public RestServer(Node node, Configuration config) throws Exception {
         instance = this;
 
-        server = new Server();
-
         Map<String, Configuration> connectorConfigs = config.getMap("connectors");
+
+        int defaultPort = 8080;
+        for (String name : connectorConfigs.keySet()) {
+            Configuration connConfig = connectorConfigs.get(name);
+            if (!connConfig.getBoolean("ssl", false)) {
+                defaultPort = connConfig.getInt("port", 8080);
+            }
+        }
+
+        server = new Server(defaultPort);
+
         for (String name : connectorConfigs.keySet()) {
             Configuration connConfig = connectorConfigs.get(name);
             ServerConnector connector;
