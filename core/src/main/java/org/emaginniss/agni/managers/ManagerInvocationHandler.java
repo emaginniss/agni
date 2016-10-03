@@ -99,6 +99,7 @@ public class ManagerInvocationHandler implements InvocationHandler {
         for (ManagerCriterion mc : mm.criteria()) {
             builder.criteria(mc.key(), mc.value());
         }
+        builder.priority(mm.priority());
 
         switch (execute) {
             case send:

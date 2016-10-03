@@ -28,6 +28,7 @@
 package org.emaginniss.agni.managers;
 
 import org.emaginniss.agni.Execute;
+import org.emaginniss.agni.Priority;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -44,5 +45,6 @@ public @interface ManagerMethod {
     String returnObject() default "[BLANK]";
     ManagerCriterion []criteria() default {};
     Inject []inject() default {};
+    Priority priority() default Priority.MEDIUM;
 
 }

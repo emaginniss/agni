@@ -34,7 +34,11 @@ import org.emaginniss.agni.annotations.Component;
 @Component(value = "json", isDefault = true)
 public class JsonSerializer implements Serializer {
 
-    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    protected Gson gson;
+
+    public JsonSerializer() {
+        gson = new GsonBuilder().setPrettyPrinting().create();
+    }
 
     @Override
     public String serialize(Object in) {
