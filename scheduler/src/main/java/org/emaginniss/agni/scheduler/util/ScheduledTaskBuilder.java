@@ -68,8 +68,48 @@ public class ScheduledTaskBuilder {
         return this;
     }
 
+    public ScheduledTaskBuilder startInS(long startInS) {
+        scheduledTask.setStartInMs(startInS * 1000);
+        return this;
+    }
+
+    public ScheduledTaskBuilder startInM(long startInM) {
+        scheduledTask.setStartInMs(startInM * 60 * 1000);
+        return this;
+    }
+
+    public ScheduledTaskBuilder startInH(long startInH) {
+        scheduledTask.setStartInMs(startInH * 60 * 60 * 1000);
+        return this;
+    }
+
+    public ScheduledTaskBuilder startInD(long startInD) {
+        scheduledTask.setStartInMs(startInD * 24 * 60 * 60 * 1000);
+        return this;
+    }
+
     public ScheduledTaskBuilder intervallMs(long intervallMs) {
         scheduledTask.setIntervallMs(intervallMs);
+        return this;
+    }
+
+    public ScheduledTaskBuilder intervallS(long intervallS) {
+        scheduledTask.setIntervallMs(intervallS * 1000);
+        return this;
+    }
+
+    public ScheduledTaskBuilder intervallM(long intervallM) {
+        scheduledTask.setIntervallMs(intervallM * 60 * 1000);
+        return this;
+    }
+
+    public ScheduledTaskBuilder intervallH(long intervallH) {
+        scheduledTask.setIntervallMs(intervallH * 60 * 60 * 1000);
+        return this;
+    }
+
+    public ScheduledTaskBuilder intervallD(long intervallD) {
+        scheduledTask.setIntervallMs(intervallD * 24 * 60 * 60 * 1000);
         return this;
     }
 
