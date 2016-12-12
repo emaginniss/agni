@@ -50,15 +50,15 @@ public class PriorityMessageBox implements MessageBox {
     public void enqueue(@NotNull Envelope envelope) {
         synchronized (this) {
             messageBoxes.get(envelope.getPriority()).enqueue(envelope);
-            this.notify();
+            this.notifyAll();
         }
     }
 
     @Override
-    public Envelope dequeue(boolean wait) throws InterruptedException {
+    public Envelope dequeue(boolean wait, Priority priority) throws InterruptedException {
         while (true) {
             synchronized (this) {
-                Envelope out = pull();
+                Envelope out = pull(priority);
                 if (out != null) {
                     return out;
                 }
@@ -67,7 +67,7 @@ public class PriorityMessageBox implements MessageBox {
                 } else {
                     return null;
                 }
-                out = pull();
+                out = pull(priority);
                 if (out != null) {
                     return out;
                 }
@@ -75,9 +75,12 @@ public class PriorityMessageBox implements MessageBox {
         }
     }
 
-    private Envelope pull() throws InterruptedException {
-        for (MessageBox mb : messageBoxes.values()) {
-            Envelope out = mb.dequeue(false);
+    private Envelope pull(Priority priority) throws InterruptedException {
+        for (Map.Entry<Priority, MessageBox> e : messageBoxes.entrySet()) {
+            if (e.getKey().getNum() > priority.getNum()) {
+                return null;
+            }
+            Envelope out = e.getValue().dequeue(false, priority);
             if (out != null) {
                 return out;
             }

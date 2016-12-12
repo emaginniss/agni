@@ -29,6 +29,7 @@ package org.emaginniss.agni.messageboxes;
 
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.Envelope;
+import org.emaginniss.agni.Priority;
 import org.emaginniss.agni.annotations.Component;
 import org.emaginniss.agni.util.EnvelopeInputStream;
 import org.emaginniss.agni.util.EnvelopeOutputStream;
@@ -70,12 +71,12 @@ public class FileBackedMessageBox implements MessageBox {
                 storeWriteQueue();
             }
 
-            this.notify();
+            this.notifyAll();
         }
     }
 
     @Override
-    public Envelope dequeue(boolean wait) throws InterruptedException {
+    public Envelope dequeue(boolean wait, Priority priority) throws InterruptedException {
         while (true) {
             synchronized (this) {
                 if (readQueue.size() == 0 && storage.size() == 0 && writeQueue.size() == 0) {

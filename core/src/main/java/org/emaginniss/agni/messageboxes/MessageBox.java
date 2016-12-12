@@ -28,6 +28,7 @@
 package org.emaginniss.agni.messageboxes;
 
 import org.emaginniss.agni.Envelope;
+import org.emaginniss.agni.Priority;
 import org.emaginniss.agni.annotations.ComponentType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +39,7 @@ public interface MessageBox {
     void enqueue(@NotNull Envelope envelope);
 
     @Nullable
-    Envelope dequeue(boolean wait) throws InterruptedException;
+    Envelope dequeue(boolean wait, Priority priority) throws InterruptedException;
 
     int getMaximumSize();
 

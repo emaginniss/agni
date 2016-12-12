@@ -30,6 +30,7 @@ package org.emaginniss.agni.impl;
 import org.apache.log4j.Logger;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Node;
+import org.emaginniss.agni.Priority;
 import org.jetbrains.annotations.Nullable;
 
 public class ProcessorThread extends Thread {
@@ -37,13 +38,15 @@ public class ProcessorThread extends Thread {
     private static final Logger log = Logger.getLogger(ProcessorThread.class);
 
     private Node node;
+    private Priority priority;
     private boolean shuttingDown = false;
     private boolean waiting = false;
     private Envelope envelope = null;
 
-    public ProcessorThread(ThreadGroup group, String name, Node node) {
+    public ProcessorThread(ThreadGroup group, String name, Node node, Priority priority) {
         super(group, name);
         this.node = node;
+        this.priority = priority;
     }
 
     @Override
@@ -51,7 +54,7 @@ public class ProcessorThread extends Thread {
         while (true) {
             try {
                 waiting = true;
-                envelope = node.getInbox().dequeue(!shuttingDown);
+                envelope = node.getInbox().dequeue(!shuttingDown, priority);
             } catch (Throwable t) {
                 log.error("Error while retrieving envelope", t);
             } finally {

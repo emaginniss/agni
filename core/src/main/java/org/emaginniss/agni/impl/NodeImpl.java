@@ -95,10 +95,12 @@ public class NodeImpl implements Node {
 
         int threadCount = configuration.getInt("threadCount", 10);
         log.debug("Starting " + threadCount + " processor threads");
-        for (int i = 0; i < threadCount; i++) {
-            ProcessorThread pt = new ProcessorThread(threadGroup, displayName + " - ProcessorThread[" + i + "]", this);
-            pt.start();
-            processorThreads.add(pt);
+        for (Priority p : Priority.values()) {
+            for (int i = 0; i < threadCount; i++) {
+                ProcessorThread pt = new ProcessorThread(threadGroup, displayName + " - ProcessorThread[" + i + "]", this, p);
+                pt.start();
+                processorThreads.add(pt);
+            }
         }
 
         log.debug("Creating path finder");

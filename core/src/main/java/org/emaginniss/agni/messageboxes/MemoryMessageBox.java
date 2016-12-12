@@ -28,6 +28,7 @@
 package org.emaginniss.agni.messageboxes;
 
 import org.emaginniss.agni.Envelope;
+import org.emaginniss.agni.Priority;
 import org.emaginniss.agni.annotations.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,12 +48,12 @@ public class MemoryMessageBox implements MessageBox {
             queue.addLast(envelope);
             currentSize.incrementAndGet();
 
-            this.notify();
+            this.notifyAll();
         }
     }
 
     @Override
-    public Envelope dequeue(boolean wait) throws InterruptedException {
+    public Envelope dequeue(boolean wait, Priority priority) throws InterruptedException {
         synchronized (this) {
             while (true) {
                 if (queue.size() == 0) {
