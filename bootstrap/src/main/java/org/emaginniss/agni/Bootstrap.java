@@ -86,10 +86,9 @@ public class Bootstrap {
             log.info("Log file:\n" + new GsonBuilder().setPrettyPrinting().create().toJson(config));
         }
 
-        addShutdownHandler(Agni.getNode());
-
         Agni.initialize(config.getChild("node"));
         Thread.sleep(1000);
+        addShutdownHandler(Agni.getNode());
 
         buildHandlers(Agni.getNode(), config);
         log.info("Bootstrap initialization complete");

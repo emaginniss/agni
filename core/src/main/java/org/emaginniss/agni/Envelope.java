@@ -97,6 +97,9 @@ public class Envelope {
     }
 
     public Attachments getAttachments() {
+        if (attachments == null) {
+            attachments = new Attachments();
+        }
         return attachments;
     }
 
