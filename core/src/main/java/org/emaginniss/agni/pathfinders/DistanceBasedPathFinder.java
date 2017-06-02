@@ -167,7 +167,7 @@ public class DistanceBasedPathFinder implements PathFinder {
     }
 
     @Override
-    public Collection<String[]> getKnownPaths() {
+    public String[][] getKnownPaths() {
         Set<String[]> out = new HashSet<>();
         try {
             readLock.lock();
@@ -177,7 +177,7 @@ public class DistanceBasedPathFinder implements PathFinder {
         } finally {
             readLock.unlock();
         }
-        return out;
+        return out.toArray(new String[out.size()][]);
     }
 
     @Override

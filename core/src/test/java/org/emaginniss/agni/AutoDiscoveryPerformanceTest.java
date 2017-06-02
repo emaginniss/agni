@@ -28,7 +28,6 @@
 package org.emaginniss.agni;
 
 import com.google.gson.JsonParser;
-import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.After;
@@ -50,9 +49,6 @@ public class AutoDiscoveryPerformanceTest {
 
     @Before
     public void setup() throws Exception {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
-
         nodeA = new NodeImpl(nodeAConf);
         Thread.sleep(1000);
         nodeB = new NodeImpl(nodeBConf);

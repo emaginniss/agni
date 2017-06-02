@@ -27,7 +27,8 @@
 
 package org.emaginniss.agni.impl;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Node;
 import org.emaginniss.agni.Priority;
@@ -35,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ProcessorThread extends Thread {
 
-    private static final Logger log = Logger.getLogger(ProcessorThread.class);
+    private static final Logger log = LogManager.getLogger(ProcessorThread.class);
 
     private Node node;
     private Priority priority;

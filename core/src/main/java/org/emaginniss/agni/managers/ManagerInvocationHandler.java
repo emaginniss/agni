@@ -110,6 +110,9 @@ public class ManagerInvocationHandler implements InvocationHandler {
                 return null;
             case request:
                 PayloadAndAttachments result = builder.request(node);
+                if (result == null) {
+                    return null;
+                }
                 if (method.getReturnType().equals(PayloadAndAttachments.class)) {
                     return result;
                 }

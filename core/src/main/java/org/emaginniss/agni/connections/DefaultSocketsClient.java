@@ -27,7 +27,8 @@
 
 package org.emaginniss.agni.connections;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Factory;
@@ -46,7 +47,7 @@ import java.net.SocketException;
 @Component("defaultSocketsClient")
 public class DefaultSocketsClient implements Connection, Runnable {
 
-    private static final Logger log = Logger.getLogger(DefaultSocketsClient.class);
+    private static final Logger log = LogManager.getLogger(DefaultSocketsClient.class);
 
     private ConnectionParent parent;
     private int port;

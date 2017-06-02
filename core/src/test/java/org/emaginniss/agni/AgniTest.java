@@ -27,7 +27,6 @@
 
 package org.emaginniss.agni;
 
-import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.junit.After;
 import org.junit.Assert;
@@ -37,12 +36,6 @@ import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AgniTest {
-
-    @Before
-    public void setup() throws Exception {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
-    }
 
     @After
     public void tearDown() throws Exception {

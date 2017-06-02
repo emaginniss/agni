@@ -28,13 +28,15 @@
 package org.emaginniss.agni;
 
 import com.google.gson.JsonParser;
-import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.impl.NodeImpl;
+import org.emaginniss.agni.messages.StatsRequest;
+import org.emaginniss.agni.messages.StatsResponse;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -44,12 +46,6 @@ public class TwoNodeTest {
     private Configuration nodeAConf = new Configuration(new JsonParser().parse("{ 'uuid': 'nodeA', 'connections': { 'server': { 'type': 'defaultSocketsServer' }}}").getAsJsonObject());
     private Configuration nodeBConf = new Configuration(new JsonParser().parse("{ 'uuid': 'nodeB', 'connections': { 'client': { 'type': 'defaultSocketsClient' }}}").getAsJsonObject());
 
-    @Before
-    public void setup() throws Exception {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
-    }
-
     @After
     public void tearDown() throws Exception {
         Thread.sleep(1000);
@@ -57,6 +53,14 @@ public class TwoNodeTest {
 
     @Test
     public void testNodeCreation() throws Exception {
+        ClassLoader cl = ClassLoader.getSystemClassLoader();
+
+        URL[] urls = ((URLClassLoader)cl).getURLs();
+
+        for(URL url: urls){
+            System.out.println(url.getFile());
+        }
+
         try (Node nodeA = new NodeImpl(nodeAConf); Node nodeB = new NodeImpl(nodeBConf)) {
             Thread.sleep(1000);
             nodeA.register(new Object() {
@@ -175,6 +179,48 @@ public class TwoNodeTest {
             assertEquals(1, new AgniBuilder("Test").type("Message2").requestAll(nodeA).size());
             assertEquals(1, new AgniBuilder("Test").type("Message2").requestAll(nodeB).size());
             assertEquals(7, hitCount.get());
+        }
+    }
+
+    @Test
+    public void testDistribution() throws Exception {
+        final AtomicInteger n1HitCount = new AtomicInteger(0);
+        final AtomicInteger n2HitCount = new AtomicInteger(0);
+
+        try (Node nodeA = new NodeImpl(nodeAConf); Node nodeB = new NodeImpl(nodeBConf)) {
+            Thread.sleep(1000);
+            nodeA.register(new Object() {
+                @Subscribe(typeName = "Message1")
+                public String handle1() {
+                    n1HitCount.incrementAndGet();
+                    return "OK";
+                }
+            });
+            Thread.sleep(1000);
+            nodeB.register(new Object() {
+                @Subscribe(typeName = "Message1")
+                public String handle1() {
+                    n2HitCount.incrementAndGet();
+                    return "OK";
+                }
+            });
+            Thread.sleep(1000);
+
+            for (int i = 0; i < 10000; i++) {
+                new AgniBuilder("Test").type("Message1").request(nodeA);
+                new AgniBuilder("Test").type("Message1").request(nodeB);
+            }
+            Thread.sleep(1000);
+            assertEquals(10000, n1HitCount.get());
+            assertEquals(10000, n2HitCount.get());
+            StatsResponse resp = nodeA.buildStatsResponse();
+            for (StatsResponse.DestinationInfo di : resp.getDestinationInfos()) {
+                System.out.println(di.getDisplayName() + " - " + di.getTimesCalled());
+            }
+            resp = nodeB.buildStatsResponse();
+            for (StatsResponse.DestinationInfo di : resp.getDestinationInfos()) {
+                System.out.println(di.getDisplayName() + " - " + di.getTimesCalled());
+            }
         }
     }
 }

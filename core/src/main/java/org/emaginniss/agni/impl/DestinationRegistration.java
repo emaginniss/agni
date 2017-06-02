@@ -27,6 +27,7 @@
 
 package org.emaginniss.agni.impl;
 
+import org.apache.commons.beanutils.BeanComparator;
 import org.emaginniss.agni.AgniBuilder;
 import org.emaginniss.agni.Criteria;
 import org.emaginniss.agni.Destination;
@@ -193,22 +194,6 @@ public class DestinationRegistration {
         }
     }
 
-    public void populate(StatsResponse resp) {
-        try {
-            destinationPathLookupReadLock.lock();
-            for (Destination d : destinationLookupByUuid.values()) {
-                if (d instanceof LocalDestination) {
-                    LocalDestination ld = (LocalDestination) d;
-                    resp.getDestinationInfos().add(new StatsResponse.DestinationInfo(ld.getUuid(), ld.getDisplayName(), ld.getNodeUuid(), ld.getType(), ld.getCriteria(), true, ld.getTimesCalled(), ld.getTimesFailed(), ld.getTotalTimeSpent(), ld.getCurrent()));
-                } else {
-                    resp.getDestinationInfos().add(new StatsResponse.DestinationInfo(d.getUuid(), d.getDisplayName(), d.getNodeUuid(), d.getType(), d.getCriteria()));
-                }
-            }
-        } finally {
-            destinationPathLookupReadLock.unlock();
-        }
-    }
-
     public void handleLostNodes(Set<String> lostNodeUuids) {
         try {
             destinationPathLookupWriteLock.lock();
@@ -224,6 +209,24 @@ public class DestinationRegistration {
             rebuildCaches();
         } finally {
             destinationPathLookupWriteLock.unlock();
+        }
+    }
+
+    public StatsResponse.DestinationInfo[] getDestinationInfos() {
+        try {
+            destinationPathLookupReadLock.lock();
+            Set<StatsResponse.DestinationInfo> out = new TreeSet<>(new BeanComparator<>("displayName"));
+            for (Destination d : destinationLookupByUuid.values()) {
+                if (d instanceof LocalDestination) {
+                    LocalDestination ld = (LocalDestination) d;
+                    out.add(new StatsResponse.DestinationInfo(ld.getUuid(), ld.getDisplayName(), ld.getNodeUuid(), ld.getType(), ld.getCriteria(), true, ld.getTimesCalled(), ld.getTimesFailed(), ld.getTotalTimeSpent(), ld.getCurrent()));
+                } else {
+                    //out.add(new StatsResponse.DestinationInfo(d.getUuid(), d.getDisplayName(), d.getNodeUuid(), d.getType(), d.getCriteria()));
+                }
+            }
+            return out.toArray(new StatsResponse.DestinationInfo[out.size()]);
+        } finally {
+            destinationPathLookupReadLock.unlock();
         }
     }
 }

@@ -30,9 +30,10 @@ package org.emaginniss.agni;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.emaginniss.agni.rest.RestServer;
 import org.emaginniss.agni.scheduler.Scheduler;
 
@@ -43,7 +44,7 @@ import java.util.List;
 
 public class Bootstrap {
 
-    private static final Logger log = Logger.getLogger(Bootstrap.class);
+    private static final Logger log = LogManager.getLogger(Bootstrap.class);
 
     public static void main(String... args) throws Exception {
         if (!new Bootstrap().initialize(args)) {
@@ -54,7 +55,6 @@ public class Bootstrap {
     private RestServer restServer;
 
     public boolean initialize(String... args) throws Exception {
-        BasicConfigurator.configure();
         Thread.currentThread().setName("Agni Bootstrap");
 
         InputStream configIn = findConfig(args);
@@ -120,14 +120,14 @@ public class Bootstrap {
         }
     }
 
-    public void initializeLogging(Configuration config) {
+    public void initializeLogging(Configuration config) throws IOException {
         if (config.getString("logFile", null) != null) {
-            BasicConfigurator.resetConfiguration();
-            PropertyConfigurator.configure(config.getString("logFile", null));
+            ConfigurationSource source = new ConfigurationSource(new FileInputStream(config.getString("logFile", null)));
+            Configurator.initialize(null, source);
         }
         if (config.getString("logResource", null) != null) {
-            BasicConfigurator.resetConfiguration();
-            PropertyConfigurator.configure(Bootstrap.class.getClassLoader().getResourceAsStream(config.getString("logResource", null)));
+            ConfigurationSource source = new ConfigurationSource(Bootstrap.class.getClassLoader().getResourceAsStream(config.getString("logResource", null)));
+            Configurator.initialize(null, source);
         }
     }
 

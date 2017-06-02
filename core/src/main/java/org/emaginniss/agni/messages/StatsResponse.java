@@ -39,10 +39,10 @@ public class StatsResponse {
     private int messageBoxMaximumSize;
     private int messageBoxCurrentSize;
     private int messageBoxCurrentMemorySize;
-    private Set<DestinationInfo> destinationInfos = new HashSet<>();
+    private DestinationInfo[] destinationInfos = new DestinationInfo[0];
     private Map<String, String> connections = new HashMap<>();
-    private Set<String[]> knownPaths = new HashSet<>();
-    private Set<ProcessorThreadInfo> processorThreadInfos = new HashSet<>();
+    private String[][] knownPaths = new String[0][];
+    private ProcessorThreadInfo[] processorThreadInfos = new ProcessorThreadInfo[0];
 
     public StatsResponse() {
     }
@@ -60,40 +60,80 @@ public class StatsResponse {
         return uuid;
     }
 
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
     public String getDisplayName() {
         return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public long getRunningFor() {
         return runningFor;
     }
 
+    public void setRunningFor(long runningFor) {
+        this.runningFor = runningFor;
+    }
+
     public int getMessageBoxMaximumSize() {
         return messageBoxMaximumSize;
+    }
+
+    public void setMessageBoxMaximumSize(int messageBoxMaximumSize) {
+        this.messageBoxMaximumSize = messageBoxMaximumSize;
     }
 
     public int getMessageBoxCurrentSize() {
         return messageBoxCurrentSize;
     }
 
+    public void setMessageBoxCurrentSize(int messageBoxCurrentSize) {
+        this.messageBoxCurrentSize = messageBoxCurrentSize;
+    }
+
     public int getMessageBoxCurrentMemorySize() {
         return messageBoxCurrentMemorySize;
     }
 
-    public Set<DestinationInfo> getDestinationInfos() {
+    public void setMessageBoxCurrentMemorySize(int messageBoxCurrentMemorySize) {
+        this.messageBoxCurrentMemorySize = messageBoxCurrentMemorySize;
+    }
+
+    public DestinationInfo[] getDestinationInfos() {
         return destinationInfos;
+    }
+
+    public void setDestinationInfos(DestinationInfo[] destinationInfos) {
+        this.destinationInfos = destinationInfos;
     }
 
     public Map<String, String> getConnections() {
         return connections;
     }
 
-    public Set<String[]> getKnownPaths() {
+    public void setConnections(Map<String, String> connections) {
+        this.connections = connections;
+    }
+
+    public String[][] getKnownPaths() {
         return knownPaths;
     }
 
-    public Set<ProcessorThreadInfo> getProcessorThreadInfos() {
+    public void setKnownPaths(String[][] knownPaths) {
+        this.knownPaths = knownPaths;
+    }
+
+    public ProcessorThreadInfo[] getProcessorThreadInfos() {
         return processorThreadInfos;
+    }
+
+    public void setProcessorThreadInfos(ProcessorThreadInfo[] processorThreadInfos) {
+        this.processorThreadInfos = processorThreadInfos;
     }
 
     public static class DestinationInfo {
@@ -173,7 +213,7 @@ public class StatsResponse {
         private String name;
         private boolean waiting;
         private String envelopeType;
-        private List<StackTraceElement> stackTrace = new ArrayList<>();
+        private StackTraceElement[] stackTrace = new StackTraceElement[0];
 
         public ProcessorThreadInfo() {
         }
@@ -187,8 +227,16 @@ public class StatsResponse {
             return name;
         }
 
+        public void setName(String name) {
+            this.name = name;
+        }
+
         public boolean isWaiting() {
             return waiting;
+        }
+
+        public void setWaiting(boolean waiting) {
+            this.waiting = waiting;
         }
 
         public String getEnvelopeType() {
@@ -199,8 +247,12 @@ public class StatsResponse {
             this.envelopeType = envelopeType;
         }
 
-        public List<StackTraceElement> getStackTrace() {
+        public StackTraceElement[] getStackTrace() {
             return stackTrace;
+        }
+
+        public void setStackTrace(StackTraceElement[] stackTrace) {
+            this.stackTrace = stackTrace;
         }
     }
 

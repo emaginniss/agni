@@ -27,17 +27,19 @@
 
 package org.emaginniss.agni.impl;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.*;
 import org.emaginniss.agni.attachments.Attachments;
 import org.emaginniss.agni.messages.*;
 import org.emaginniss.agni.util.LimitedHashSet;
 
+import java.util.Arrays;
 import java.util.Set;
 
 public class WhisperHandler {
 
-    private static final Logger log = Logger.getLogger(WhisperHandler.class);
+    private static final Logger log = LogManager.getLogger(WhisperHandler.class);
 
     private Set<String> seenWhispers = new LimitedHashSet<>(100);
     private Node node;
@@ -59,7 +61,7 @@ public class WhisperHandler {
             info.setMessageUuid(previousMessageUuid);
         }
         info.getDestinations().addAll(node.getDestinationRegistration().getAll());
-        info.getPaths().addAll(node.getPathFinder().getKnownPaths());
+        info.getPaths().addAll(Arrays.asList(node.getPathFinder().getKnownPaths()));
         Envelope envelope = new Envelope(SubscriptionInfo.class.getName(), SubscriptionInfo.class.getName(), node.getSerializer().serialize(info), Priority.HIGHEST, new Attachments(), new Criteria(), false);
         envelope.setDestinationUuid("WHISPER_" + targetUuid + "_SUBSCRIPTION_INFO");
         envelope.setNodeUuid(targetUuid);

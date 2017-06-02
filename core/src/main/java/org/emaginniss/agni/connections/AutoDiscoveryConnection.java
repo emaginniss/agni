@@ -27,7 +27,8 @@
 
 package org.emaginniss.agni.connections;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Factory;
@@ -45,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component(value = "autoDiscovery", isDefault = true)
 public class AutoDiscoveryConnection implements Connection, ConnectionParent {
 
-    private static final Logger log = Logger.getLogger(AutoDiscoveryConnection.class);
+    private static final Logger log = LogManager.getLogger(AutoDiscoveryConnection.class);
 
     private Configuration configuration;
     private ConnectionParent parent;

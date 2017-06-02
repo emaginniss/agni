@@ -27,7 +27,9 @@
 
 package org.emaginniss.agni.impl;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.beanutils.BeanComparator;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.*;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.attachments.Attachments;
@@ -47,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class NodeImpl implements Node {
 
-    private static final Logger log = Logger.getLogger(Node.class);
+    private static final Logger log = LogManager.getLogger(Node.class);
 
     private final long startupTime = System.currentTimeMillis();
     private final Map<String, ResultContainer> waiting = new ConcurrentHashMap<>();
@@ -261,24 +263,36 @@ public class NodeImpl implements Node {
         envelope.setDestinationUuid(destination.getUuid());
         envelope.setNodeUuid(destination.getNodeUuid());
 
-        final ResultContainer result = new ResultContainer(1);
+        PayloadAndAttachments resp = null;
+        if (destination.getNodeUuid().equals(getUuid())) {
+            LocalDestination ld = destinationRegistration.getLocalDestination(envelope.getDestinationUuid());
+            if (ld == null) {
+                throw new RuntimeException("Unable to find destination for envelope");
+            }
+            resp = ld.invoke(envelope, payload);
+        } else {
+            final ResultContainer result = new ResultContainer(1);
 
-        synchronized (result) {
-            waiting.put(envelope.getUuid(), result);
+            synchronized (result) {
+                waiting.put(envelope.getUuid(), result);
 
-            enqueue(envelope);
+                enqueue(envelope);
 
-            try {
-                result.wait(timeout);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } finally {
-                waiting.remove(envelope.getUuid());
+                try {
+                    result.wait(timeout);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    waiting.remove(envelope.getUuid());
+                }
+            }
+
+            if (result.getResult().size() > 0) {
+                resp = result.getResult().values().iterator().next();
             }
         }
 
-        if (result.getResult().size() > 0) {
-            PayloadAndAttachments resp = result.getResult().values().iterator().next();
+        if (resp != null) {
             if (resp.getPayload() instanceof Throwable) {
                 if (resp.getPayload() instanceof RuntimeException) {
                     throw (RuntimeException) resp.getPayload();
@@ -476,8 +490,9 @@ public class NodeImpl implements Node {
     public StatsResponse buildStatsResponse() {
         StatsResponse resp = new StatsResponse(uuid, displayName, System.currentTimeMillis() - startupTime, inbox.getMaximumSize(), inbox.getCurrentSize(), inbox.getCurrentMemorySize());
         connectionData.populate(resp);
-        destinationRegistration.populate(resp);
-        resp.getKnownPaths().addAll(pathFinder.getKnownPaths());
+        resp.setDestinationInfos(destinationRegistration.getDestinationInfos());
+        resp.setKnownPaths(pathFinder.getKnownPaths());
+        Set<StatsResponse.ProcessorThreadInfo> ptis = new TreeSet<>(new BeanComparator<>("name"));
         for (ProcessorThread pt : processorThreads) {
             StatsResponse.ProcessorThreadInfo pti = new StatsResponse.ProcessorThreadInfo(pt.getName(), pt.isWaiting());
             if (!pt.isWaiting()) {
@@ -485,10 +500,11 @@ public class NodeImpl implements Node {
                 if (envelope != null) {
                     pti.setEnvelopeType(envelope.getType());
                 }
-                pti.getStackTrace().addAll(Arrays.asList(pt.getStackTrace()));
+                pti.setStackTrace(pt.getStackTrace());
             }
-            resp.getProcessorThreadInfos().add(pti);
+            ptis.add(pti);
         }
+        resp.setProcessorThreadInfos(ptis.toArray(new StatsResponse.ProcessorThreadInfo[ptis.size()]));
         return resp;
     }
 

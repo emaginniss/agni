@@ -48,7 +48,7 @@ public interface PathFinder {
 
     void removeNodeConnection(String from, String to);
 
-    Collection<String[]> getKnownPaths();
+    String[][] getKnownPaths();
 
     void handle(SubscriptionInfo subscriptionInfo, String sourceUuid);
 

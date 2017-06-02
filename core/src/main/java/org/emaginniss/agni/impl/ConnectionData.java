@@ -27,7 +27,8 @@
 
 package org.emaginniss.agni.impl;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.*;
 import org.emaginniss.agni.connections.Connection;
 import org.emaginniss.agni.connections.ConnectionParent;
@@ -39,7 +40,7 @@ import java.util.*;
 
 public class ConnectionData implements ConnectionParent {
 
-    private static final Logger log = Logger.getLogger(ConnectionData.class);
+    private static final Logger log = LogManager.getLogger(ConnectionData.class);
 
     private Node node;
     private Map<String, Connection> connections = new HashMap<>();

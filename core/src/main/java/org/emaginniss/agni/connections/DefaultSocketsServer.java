@@ -27,7 +27,8 @@
 
 package org.emaginniss.agni.connections;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Factory;
@@ -50,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component("defaultSocketsServer")
 public class DefaultSocketsServer implements Connection, Runnable {
 
-    private static final Logger log = Logger.getLogger(DefaultSocketsServer.class);
+    private static final Logger log = LogManager.getLogger(DefaultSocketsServer.class);
 
     private ConnectionParent parent;
     private ServerSocket serverSocket;

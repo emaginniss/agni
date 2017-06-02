@@ -28,11 +28,9 @@
 package org.emaginniss.agni;
 
 import com.google.gson.JsonParser;
-import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.attachments.Attachments;
 import org.emaginniss.agni.impl.NodeImpl;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import sun.misc.IOUtils;
@@ -43,12 +41,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.Assert.*;
 
 public class AttachmentsTest {
-
-    @Before
-    public void setup() throws Exception {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
-    }
 
     @Test
     public void singleNodeAttachmentSendTest() throws Exception {

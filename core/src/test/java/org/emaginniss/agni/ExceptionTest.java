@@ -27,7 +27,6 @@
 
 package org.emaginniss.agni;
 
-import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.junit.After;
 import org.junit.Assert;
@@ -41,8 +40,6 @@ public class ExceptionTest {
 
     @Before
     public void setup() throws Exception {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
         Agni.initialize();
     }
 

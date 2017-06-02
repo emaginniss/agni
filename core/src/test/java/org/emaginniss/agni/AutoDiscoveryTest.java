@@ -28,11 +28,9 @@
 package org.emaginniss.agni;
 
 import com.google.gson.JsonParser;
-import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.impl.NodeImpl;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,12 +44,6 @@ public class AutoDiscoveryTest {
     private Configuration nodeCConf = new Configuration(new JsonParser().parse("{ 'uuid': 'nodeC', 'connections': { 'autoDiscovery': { 'type': 'autoDiscovery' }}}").getAsJsonObject());
     private Configuration nodeDConf = new Configuration(new JsonParser().parse("{ 'uuid': 'nodeD', 'connections': { 'autoDiscovery': { 'type': 'autoDiscovery' }}}").getAsJsonObject());
     private Configuration nodeEConf = new Configuration(new JsonParser().parse("{ 'uuid': 'nodeE', 'connections': { 'autoDiscovery': { 'type': 'autoDiscovery' }}}").getAsJsonObject());
-
-    @Before
-    public void setup() throws Exception {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
-    }
 
     @After
     public void tearDown() throws Exception {

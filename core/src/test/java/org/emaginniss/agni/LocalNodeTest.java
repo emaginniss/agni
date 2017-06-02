@@ -27,7 +27,6 @@
 
 package org.emaginniss.agni;
 
-import org.apache.log4j.BasicConfigurator;
 import org.emaginniss.agni.annotations.Criterion;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.impl.NodeImpl;
@@ -41,12 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 
 public class LocalNodeTest {
-
-    @Before
-    public void setup() throws Exception {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
-    }
 
     @Test
     public void testNodeCreation() throws Exception {
