@@ -59,7 +59,7 @@ public class LocalDestination extends Destination {
                     } catch (InterruptedException e) {
                         return;
                     }
-                    currentEPS = (eventsSinceLastTimeCheck.get() * 1000.0) - (System.currentTimeMillis() - lastTimeCheck);
+                    currentEPS = (eventsSinceLastTimeCheck.get() * 1000.0) / (double)(System.currentTimeMillis() - lastTimeCheck);
                 }
             }
         });
