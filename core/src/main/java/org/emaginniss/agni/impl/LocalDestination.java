@@ -42,6 +42,31 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class LocalDestination extends Destination {
 
+    private static transient double currentEPS = 0;
+    private static transient AtomicLong eventsSinceLastTimeCheck = new AtomicLong(0);
+    private static transient long lastTimeCheck;
+
+    static {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                currentEPS = 0;
+                while (true) {
+                    lastTimeCheck = System.currentTimeMillis();
+                    eventsSinceLastTimeCheck.set(0);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                    currentEPS = (eventsSinceLastTimeCheck.get() * 1000.0) - (System.currentTimeMillis() - lastTimeCheck);
+                }
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
     private transient Object object;
     private transient Method method;
     private transient AtomicLong timesCalled = new AtomicLong(0);
@@ -58,6 +83,7 @@ public class LocalDestination extends Destination {
     }
 
     public PayloadAndAttachments invoke(Envelope envelope, Object payload) {
+        eventsSinceLastTimeCheck.incrementAndGet();
         timesCalled.incrementAndGet();
         current.incrementAndGet();
         long start = System.currentTimeMillis();
@@ -113,5 +139,9 @@ public class LocalDestination extends Destination {
 
     public long getCurrent() {
         return current.get();
+    }
+
+    public static double getCurrentEPS() {
+        return currentEPS;
     }
 }

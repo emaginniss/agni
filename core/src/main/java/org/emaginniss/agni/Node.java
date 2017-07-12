@@ -104,4 +104,6 @@ public interface Node extends Closeable {
     boolean isShuttingDown();
 
     <T> T createManager(Class T);
+
+    double getCurrentEPS();
 }

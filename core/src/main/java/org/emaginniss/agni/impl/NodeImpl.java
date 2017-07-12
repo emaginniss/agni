@@ -515,4 +515,9 @@ public class NodeImpl implements Node {
     public <T> T createManager(Class T) {
         return managerFactory.createManager(this, T);
     }
+
+    @Override
+    public double getCurrentEPS() {
+        return LocalDestination.getCurrentEPS();
+    }
 }
