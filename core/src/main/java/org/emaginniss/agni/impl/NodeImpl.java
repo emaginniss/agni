@@ -119,7 +119,12 @@ public class NodeImpl implements Node {
     }
 
     public void register(@NotNull Object object) {
-        for (Method method : object.getClass().getMethods()) {
+        Set<Method> methods = new HashSet<>(Arrays.asList(object.getClass().getMethods()));
+        for (Class cl : object.getClass().getInterfaces()) {
+            methods.addAll(Arrays.asList(cl.getMethods()));
+        }
+
+        for (Method method : methods) {
             Subscribe subscribe = method.getAnnotation(Subscribe.class);
             if (subscribe != null) {
                 String type = subscribe.typeName();
