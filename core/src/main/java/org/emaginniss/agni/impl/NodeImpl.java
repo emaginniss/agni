@@ -27,9 +27,8 @@
 
 package org.emaginniss.agni.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanComparator;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import org.emaginniss.agni.*;
 import org.emaginniss.agni.annotations.Subscribe;
 import org.emaginniss.agni.attachments.Attachments;
@@ -47,9 +46,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class NodeImpl implements Node {
-
-    private static final Logger log = LogManager.getLogger(Node.class);
 
     private final long startupTime = System.currentTimeMillis();
     private final Map<String, ResultContainer> waiting = new ConcurrentHashMap<>();

@@ -27,8 +27,7 @@
 
 package org.emaginniss.agni.impl;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import lombok.extern.slf4j.Slf4j;
 import org.emaginniss.agni.*;
 import org.emaginniss.agni.connections.Connection;
 import org.emaginniss.agni.connections.ConnectionParent;
@@ -38,9 +37,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+@Slf4j
 public class ConnectionData implements ConnectionParent {
-
-    private static final Logger log = LogManager.getLogger(ConnectionData.class);
 
     private Node node;
     private Map<String, Connection> connections = new HashMap<>();

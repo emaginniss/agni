@@ -27,8 +27,7 @@
 
 package org.emaginniss.agni.connections;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import lombok.extern.slf4j.Slf4j;
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Factory;
@@ -44,9 +43,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component(value = "autoDiscovery", isDefault = true)
+@Slf4j
 public class AutoDiscoveryConnection implements Connection, ConnectionParent {
-
-    private static final Logger log = LogManager.getLogger(AutoDiscoveryConnection.class);
 
     private Configuration configuration;
     private ConnectionParent parent;

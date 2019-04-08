@@ -28,8 +28,7 @@
 package org.emaginniss.agni;
 
 import eu.infomas.annotation.AnnotationDetector;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.emaginniss.agni.annotations.Component;
 import org.emaginniss.agni.annotations.ComponentType;
 
@@ -37,9 +36,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
+@Slf4j
 public abstract class Factory {
-
-    private static final Logger log = LogManager.getLogger(Factory.class);
 
     private static Map<Class, Map<String, Class>> componentLookup = new HashMap<>();
     private static Map<Class, String> defaultComponents = new HashMap<>();
