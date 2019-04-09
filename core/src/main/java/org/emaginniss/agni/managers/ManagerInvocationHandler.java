@@ -29,6 +29,8 @@ package org.emaginniss.agni.managers;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.emaginniss.agni.*;
 
 import java.lang.annotation.Annotation;
@@ -37,10 +39,39 @@ import java.lang.reflect.Method;
 
 public class ManagerInvocationHandler implements InvocationHandler {
 
+    private static final Logger log = LogManager.getLogger(ManagerInvocationHandler.class);
+
     private Node node;
 
-    public ManagerInvocationHandler(Node node) {
+    ManagerInvocationHandler(Node node, Class clazz) {
         this.node = node;
+
+        for (Method method : clazz.getMethods()) {
+            Annotation [][]paramAnnotationsList = method.getParameterAnnotations();
+            ManagerMethod mm = method.getAnnotation(ManagerMethod.class);
+            if (mm != null && !mm.payloadClass().equals(Object.class)) {
+                log.info(String.format("Checking manager %s method %s", clazz.getName(), method.getName()));
+
+                Object payload;
+                try {
+                    payload = mm.payloadClass().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("Unable to create instance of %s for manager %s method %s", mm.payloadClass().getName(), clazz.getName(), method.getName()), e);
+                }
+                for (Annotation[] aParamAnnotationsList : paramAnnotationsList) {
+                    for (Annotation paramAnnotation : aParamAnnotationsList) {
+                        if (paramAnnotation instanceof Inject) {
+                            Inject inject = (Inject) paramAnnotation;
+                            try {
+                                BeanUtils.getProperty(payload, inject.value());
+                            } catch (Exception e) {
+                                throw new RuntimeException(String.format("Unable to find bean property %s of %s for manager %s method %s", inject.value(), mm.payloadClass().getName(), clazz.getName(), method.getName()), e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

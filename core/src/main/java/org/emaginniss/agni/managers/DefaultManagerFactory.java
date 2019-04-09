@@ -37,6 +37,6 @@ public class DefaultManagerFactory implements ManagerFactory {
 
     @Override
     public <T> T createManager(Node node, Class T) {
-        return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { T }, new ManagerInvocationHandler(node));
+        return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { T }, new ManagerInvocationHandler(node, T));
     }
 }
