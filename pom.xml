@@ -18,6 +18,7 @@
 
     <modules>
         <module>core</module>
+        <module>hazelcast</module>
         <module>rest</module>
         <module>scheduler</module>
         <module>bootstrap</module>

@@ -29,9 +29,10 @@ package org.emaginniss.agni;
 
 import org.emaginniss.agni.attachments.Attachments;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Envelope {
+public class Envelope implements Serializable {
 
     private String uuid;
     private String destinationUuid;
