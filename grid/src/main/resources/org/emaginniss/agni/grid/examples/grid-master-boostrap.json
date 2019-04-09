@@ -1,5 +1,4 @@
 {
-    "logFile": "src/main/resources/org/emaginniss/agni/examples/fibonacci/log4j.properties",
     "connections": {
         "autoDiscovery": {
             "type": "autoDiscovery"
@@ -30,7 +29,6 @@
 
                     },
                     "bootstrap": {
-                        "logFile": "src/main/resources/org/emaginniss/agni/examples/fibonacci/log4j.properties",
                         "connections": {
                             "autoDiscovery": {
                                 "type": "autoDiscovery"
@@ -49,7 +47,6 @@
 
                     },
                     "bootstrap": {
-                        "logFile": "src/main/resources/org/emaginniss/agni/examples/fibonacci/log4j.properties",
                         "connections": {
                             "autoDiscovery": {
                                 "type": "autoDiscovery"

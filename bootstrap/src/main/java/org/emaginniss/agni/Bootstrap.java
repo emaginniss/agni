@@ -27,24 +27,24 @@
 
 package org.emaginniss.agni;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.config.ConfigurationSource;
-import org.apache.logging.log4j.core.config.Configurator;
+import lombok.extern.slf4j.Slf4j;
 import org.emaginniss.agni.rest.RestServer;
 import org.emaginniss.agni.scheduler.Scheduler;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class Bootstrap {
-
-    private static final Logger log = LogManager.getLogger(Bootstrap.class);
 
     public static void main(String... args) throws Exception {
         if (!new Bootstrap().initialize(args)) {
@@ -121,13 +121,27 @@ public class Bootstrap {
     }
 
     public void initializeLogging(Configuration config) throws IOException {
-        if (config.getString("logFile", null) != null) {
-            ConfigurationSource source = new ConfigurationSource(new FileInputStream(config.getString("logFile", null)));
-            Configurator.initialize(null, source);
+        final String logFile = config.getString("logFile", null);
+        if (logFile != null) {
+            loadConfig(new FileInputStream(logFile));
         }
-        if (config.getString("logResource", null) != null) {
-            ConfigurationSource source = new ConfigurationSource(Bootstrap.class.getClassLoader().getResourceAsStream(config.getString("logResource", null)));
-            Configurator.initialize(null, source);
+        final String logResource = config.getString("logResource", null);
+        if (logResource != null) {
+            loadConfig(Bootstrap.class.getClassLoader().getResourceAsStream(logResource));
+        }
+    }
+
+    private void loadConfig(final InputStream resourceAsStream) throws IOException {
+        try {
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+            loggerContext.reset();
+            JoranConfigurator configurator = new JoranConfigurator();
+            configurator.setContext(loggerContext);
+            configurator.doConfigure(resourceAsStream);
+        } catch (JoranException e) {
+            e.printStackTrace();
+        } finally {
+            resourceAsStream.close();
         }
     }
 

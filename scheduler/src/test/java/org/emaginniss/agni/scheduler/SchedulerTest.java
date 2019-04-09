@@ -27,7 +27,9 @@
 
 package org.emaginniss.agni.scheduler;
 
-import org.apache.log4j.BasicConfigurator;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import org.emaginniss.agni.Agni;
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.annotations.Subscribe;
@@ -36,6 +38,7 @@ import org.emaginniss.agni.scheduler.util.ScheduledTaskBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,8 +77,10 @@ public class SchedulerTest {
 
     @Before
     public void setup() {
-        BasicConfigurator.resetConfiguration();
-        BasicConfigurator.configure();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.reset();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(loggerContext);
         Agni.initialize();
         new Scheduler(Agni.getNode(), new Configuration());
     }

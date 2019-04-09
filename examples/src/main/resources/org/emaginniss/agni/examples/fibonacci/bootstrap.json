@@ -1,5 +1,4 @@
 {
-    "logFile": "src/main/resources/org/emaginniss/agni/examples/fibonacci/log4j.properties",
     "subscribers": [
         "org.emaginniss.agni.examples.fibonacci.FibonacciHandler"
     ],

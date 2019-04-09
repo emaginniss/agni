@@ -27,16 +27,14 @@
 
 package org.emaginniss.agni.impl;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import lombok.extern.slf4j.Slf4j;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.Node;
 import org.emaginniss.agni.Priority;
 import org.jetbrains.annotations.Nullable;
 
+@Slf4j
 public class ProcessorThread extends Thread {
-
-    private static final Logger log = LogManager.getLogger(ProcessorThread.class);
 
     private Node node;
     private Priority priority;

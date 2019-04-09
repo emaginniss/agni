@@ -27,8 +27,7 @@
 
 package org.emaginniss.agni.impl;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import lombok.extern.slf4j.Slf4j;
 import org.emaginniss.agni.*;
 import org.emaginniss.agni.attachments.Attachments;
 import org.emaginniss.agni.messages.*;
@@ -37,9 +36,8 @@ import org.emaginniss.agni.util.LimitedHashSet;
 import java.util.Arrays;
 import java.util.Set;
 
+@Slf4j
 public class WhisperHandler {
-
-    private static final Logger log = LogManager.getLogger(WhisperHandler.class);
 
     private Set<String> seenWhispers = new LimitedHashSet<>(100);
     private Node node;
