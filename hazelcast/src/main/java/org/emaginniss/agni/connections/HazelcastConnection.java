@@ -30,8 +30,7 @@ package org.emaginniss.agni.connections;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.MemberAttributeConfig;
 import com.hazelcast.core.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.emaginniss.agni.Configuration;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.Component;
@@ -39,10 +38,9 @@ import org.emaginniss.agni.annotations.Component;
 /**
  * Created by emagi on 10/30/2017.
  */
+@Slf4j
 @Component(value = "hazelcast")
 public class HazelcastConnection implements Connection {
-
-    private static final Logger log = LogManager.getLogger(HazelcastConnection.class);
 
     private final Configuration configuration;
     private final ConnectionParent parent;

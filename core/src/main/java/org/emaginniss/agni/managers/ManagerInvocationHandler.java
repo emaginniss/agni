@@ -27,19 +27,17 @@
 
 package org.emaginniss.agni.managers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.emaginniss.agni.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+@Slf4j
 public class ManagerInvocationHandler implements InvocationHandler {
-
-    private static final Logger log = LogManager.getLogger(ManagerInvocationHandler.class);
 
     private Node node;
 
