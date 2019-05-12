@@ -30,6 +30,7 @@ package org.emaginniss.agni.pathfinders;
 import org.emaginniss.agni.Destination;
 import org.emaginniss.agni.Envelope;
 import org.emaginniss.agni.annotations.Component;
+import org.emaginniss.agni.impl.LocalDestination;
 import org.emaginniss.agni.messages.RemoveLink;
 import org.emaginniss.agni.messages.StopRouting;
 import org.emaginniss.agni.messages.SubscriptionInfo;
@@ -58,7 +59,7 @@ public class DistanceBasedPathFinder implements PathFinder {
 
             Map<Integer, Set<Destination>> ranking = new TreeMap<>();
             for (Destination destination : in) {
-                Integer length = cache.get(destination.getNodeUuid());
+                Integer length = destination instanceof LocalDestination ? 0 : cache.get(destination.getNodeUuid());
                 if (length == null) {
                     length = Integer.MAX_VALUE;
                 }
