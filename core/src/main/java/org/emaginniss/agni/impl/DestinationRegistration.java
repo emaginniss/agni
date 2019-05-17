@@ -199,8 +199,10 @@ public class DestinationRegistration {
             destinationPathLookupWriteLock.lock();
             Set<String> destinationUuids = new HashSet<>();
             for (String nodeUuid : lostNodeUuids) {
-                if (destinationLookupByNodeUuid.containsKey(nodeUuid)) {
-                    destinationUuids.addAll(destinationLookupByNodeUuid.get(nodeUuid));
+                if (!nodeUuid.equals(node.getUuid())) {
+                    if (destinationLookupByNodeUuid.containsKey(nodeUuid)) {
+                        destinationUuids.addAll(destinationLookupByNodeUuid.get(nodeUuid));
+                    }
                 }
             }
             for (String destinationUuid : destinationUuids) {

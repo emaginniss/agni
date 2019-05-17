@@ -107,6 +107,7 @@ public class DefaultSocketsClient implements Connection, Runnable {
         while (!shutdown) {
             try {
                 if (socket == null) {
+                    log.info("Attempting connection to " + host + ":" + port);
                     socket = new Socket(host, port);
 
                     out = new EnvelopeOutputStream(new BufferedOutputStream(socket.getOutputStream()));
@@ -152,7 +153,7 @@ public class DefaultSocketsClient implements Connection, Runnable {
                     return;
                 }
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1000 * Math.min(failureCount, 10));
                 } catch (InterruptedException e1) {
                     log.error("Error", e1);
                 }
